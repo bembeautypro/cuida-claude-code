@@ -1,0 +1,151 @@
+/* ================================================================
+   CUIDA — Design tokens
+   Inherited from Bluma-extracted DS, adapted for healthcare family-care
+   ================================================================ */
+
+:root {
+  /* ── Default palette: ACOLHIMENTO (warm) ── */
+  --c-text:        rgb(38, 37, 37);
+  --c-text-soft:   rgba(38, 37, 37, .68);
+  --c-text-muted:  rgba(38, 37, 37, .46);
+  --c-bg:          #fffaf2;            /* slightly warmer page */
+  --c-card:        #ffffff;
+  --c-surface:     rgb(254, 243, 225); /* linho */
+  --c-accent:      rgb(1, 55, 61);     /* esmeralda */
+  --c-accent-soft: rgb(212, 232, 230); /* sage */
+  --c-accent-fg:   rgb(254, 243, 225);
+  --c-line:        rgba(38, 37, 37, .10);
+  --c-line-strong: rgba(38, 37, 37, .18);
+
+  /* semantic / status */
+  --c-success:    rgb(35, 100, 68);
+  --c-success-soft: rgb(218, 235, 222);
+  --c-alert:      rgb(170, 60, 38);
+  --c-alert-soft: rgb(252, 224, 213);
+  --c-warn:       rgb(180, 110, 30);
+  --c-warn-soft:  rgb(253, 233, 200);
+
+  /* ── Type ── */
+  --font-display: "Plus Jakarta Sans", "Helvetica Neue", Helvetica, Inter, system-ui, sans-serif;
+  --font-body:    "Plus Jakarta Sans", "Helvetica Neue", Helvetica, Inter, system-ui, sans-serif;
+
+  /* size scale (mobile-tuned) */
+  --fs-display: 40px;  /* large headers */
+  --fs-h1:      32px;
+  --fs-h2:      24px;
+  --fs-h3:      20px;
+  --fs-lg:      17px;
+  --fs-body:    15px;
+  --fs-sm:      13px;
+  --fs-xs:      11px;
+
+  --lh-tight: 1.12;
+  --lh-body:  1.45;
+
+  /* weights */
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ── Space (8pt) ── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+
+  /* ── Radii ── */
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r-md:  14px;
+  --r-lg:  19px;
+  --r-card: 22px;
+  --r-xl:  28px;
+  --r-pill: 999px;
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 1px 2px rgba(38,37,37,.04);
+  --shadow-md:  0 1px 2px rgba(38,37,37,.04), 0 6px 22px rgba(38,37,37,.05);
+  --shadow-lg:  0 4px 8px rgba(38,37,37,.06), 0 24px 60px rgba(38,37,37,.10);
+}
+
+/* ── Palette presets ── */
+[data-palette="acolhimento"] {
+  --c-text: rgb(38, 37, 37);
+  --c-bg: #fffaf2;
+  --c-card: #ffffff;
+  --c-surface: rgb(254, 243, 225);
+  --c-accent: rgb(1, 55, 61);
+  --c-accent-soft: rgb(212, 232, 230);
+  --c-accent-fg: rgb(254, 243, 225);
+}
+[data-palette="calma"] {
+  --c-text: rgb(22, 32, 46);
+  --c-text-soft: rgba(22, 32, 46, .68);
+  --c-text-muted: rgba(22, 32, 46, .46);
+  --c-bg: #f6f7fa;
+  --c-card: #ffffff;
+  --c-surface: rgb(232, 238, 247);
+  --c-accent: rgb(28, 51, 92);
+  --c-accent-soft: rgb(207, 222, 240);
+  --c-accent-fg: rgb(245, 248, 253);
+  --c-line: rgba(22, 32, 46, .10);
+}
+[data-palette="vida"] {
+  --c-text: rgb(28, 36, 28);
+  --c-text-soft: rgba(28, 36, 28, .68);
+  --c-text-muted: rgba(28, 36, 28, .46);
+  --c-bg: #f8f6ef;
+  --c-card: #ffffff;
+  --c-surface: rgb(234, 232, 217);
+  --c-accent: rgb(56, 72, 42);
+  --c-accent-soft: rgb(216, 226, 195);
+  --c-accent-fg: rgb(248, 246, 239);
+  --c-line: rgba(28, 36, 28, .10);
+}
+
+/* ── Density ── */
+[data-density="cozy"] {
+  --row-h: 56px;
+  --card-pad: 18px;
+}
+[data-density="compact"] {
+  --row-h: 48px;
+  --card-pad: 14px;
+}
+
+/* ── Base ── */
+.cuida-app, .cuida-screen {
+  font-family: var(--font-body);
+  color: var(--c-text);
+  background: var(--c-bg);
+  font-weight: var(--fw-regular);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* utility classes used inside screens */
+.cu-h1 { font-size: var(--fs-h1); font-weight: var(--fw-semibold); letter-spacing: -0.02em; line-height: var(--lh-tight); }
+.cu-h2 { font-size: var(--fs-h2); font-weight: var(--fw-semibold); letter-spacing: -0.015em; line-height: var(--lh-tight); }
+.cu-h3 { font-size: var(--fs-h3); font-weight: var(--fw-medium); letter-spacing: -0.01em; line-height: 1.2; }
+.cu-lg { font-size: var(--fs-lg); font-weight: var(--fw-regular); line-height: 1.4; }
+.cu-body { font-size: var(--fs-body); line-height: var(--lh-body); }
+.cu-sm { font-size: var(--fs-sm); line-height: 1.4; }
+.cu-xs { font-size: var(--fs-xs); line-height: 1.3; }
+.cu-eyebrow {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--c-text-soft);
+}
+.cu-muted { color: var(--c-text-soft); }
+.cu-faint { color: var(--c-text-muted); }
+
+/* numerical / tabular */
+.cu-num { font-feature-settings: "tnum" 1, "ss01" 1; }
