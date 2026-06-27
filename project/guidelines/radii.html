@@ -1,0 +1,26 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Raios de canto" subtitle="--r-xs … --r-pill, rounding suave é assinatura da marca" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 24px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .col { text-align: center; }
+  .box { width: 64px; height: 64px; background: var(--c-accent); }
+  .lab { font-size: 10.5px; color: var(--c-text-muted); margin-top: 8px; font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="col"><div class="box" style="border-radius:var(--r-xs)"></div><div class="lab">xs·6</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-sm)"></div><div class="lab">sm·10</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-md)"></div><div class="lab">md·14</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-lg)"></div><div class="lab">lg·19</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-card)"></div><div class="lab">card·22</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-xl)"></div><div class="lab">xl·28</div></div>
+    <div class="col"><div class="box" style="border-radius:var(--r-pill)"></div><div class="lab">pill·∞</div></div>
+  </div>
+</body>
+</html>

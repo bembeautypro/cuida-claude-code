@@ -1,0 +1,89 @@
+<!-- @dsCard group="App" viewport="402x760" subtitle="App mobile navegável — telas reais do Cuida num iPhone" -->
+<!-- @startingPoint section="App" subtitle="Protótipo navegável completo do app Cuida" viewport="402x874" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cuida · UI Kit — App mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../cuida/tokens.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--c-surface); display: grid; place-items: center; min-height: 100vh; }
+  #root { padding: 24px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="../../cuida/ios-frame.jsx"></script>
+<script type="text/babel" src="../../cuida/icons.jsx"></script>
+<script type="text/babel" src="../../cuida/ui.jsx"></script>
+<script type="text/babel" src="../../cuida/data.jsx"></script>
+<script type="text/babel" src="../../cuida/screens.jsx"></script>
+<script type="text/babel" src="../../cuida/newscreens.jsx"></script>
+<script type="text/babel" src="../../cuida/healthscreens.jsx"></script>
+<script type="text/babel" src="../../cuida/morescreens.jsx"></script>
+<script type="text/babel" src="../../cuida/states.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function AppKit() {
+  const [screen, setScreen] = useState('home');
+  const [tab, setTab] = useState('home');
+  const go = (next) => {
+    setScreen(next);
+    if (['home','meds','stock','emerg','fam'].includes(next)) setTab(next);
+  };
+  const map = {
+    home:             <window.HomeV3Screen go={go}/>,
+    meds:             <window.MedsV2Screen go={go}/>,
+    'meds-v2':        <window.MedsV2Screen go={go}/>,
+    'med-detail':     <window.MedDetailScreen go={go}/>,
+    stock:            <window.StockScreen go={go}/>,
+    emerg:            <window.EmergencyScreen go={go}/>,
+    fam:              <window.FamilyScreen go={go}/>,
+    feed:             <window.FeedScreen go={go}/>,
+    settings:         <window.SettingsScreen go={go}/>,
+    'add-med':        <window.AddMedModalScreen go={go}/>,
+    consultas:        <window.ConsultasScreen go={go}/>,
+    'consulta-detail':<window.ConsultaDetailScreen go={go}/>,
+    exames:           <window.ExamesScreen go={go}/>,
+    'exames-full':    <window.ExamesFullScreen go={go}/>,
+    prontuarios:      <window.ProntuariosScreen go={go}/>,
+    'resumo-saude':   <window.ResumoSaudeScreen go={go}/>,
+    historico:        <window.HistoricoMedicoScreen go={go}/>,
+    vacinas:          <window.VacinasScreen go={go}/>,
+    login:            <window.LoginScreen go={go}/>,
+    'edit-profile':   <window.EditProfileScreen go={go}/>,
+    'add-consulta':   <window.AgendarConsultaScreen go={go}/>,
+    'add-exame':      <window.AddExameScreen go={go}/>,
+    notificacoes:     <window.NotificacoesScreen go={go}/>,
+  };
+  return (
+    <window.IOSDevice width={402} height={874}>
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--c-bg)', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0 }}>
+          {map[screen] || map.home}
+        </div>
+        {screen !== 'add-med' && <window.TabBar active={tab} onChange={go}/>}
+      </div>
+    </window.IOSDevice>
+  );
+}
+
+function boot() {
+  if (!window.IOSDevice || !window.HomeV3Screen || !window.TabBar) { setTimeout(boot, 40); return; }
+  ReactDOM.createRoot(document.getElementById('root')).render(<AppKit/>);
+}
+boot();
+</script>
+</body>
+</html>

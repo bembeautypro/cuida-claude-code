@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Calma · paleta azul" subtitle="Tema alternativo — azul sereno para perfis clínicos" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="calma">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .sw { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--c-line); }
+  .chip { height: 64px; }
+  .meta { padding: 8px 10px; background: var(--c-card); }
+  .nm { font-size: 12px; font-weight: 600; }
+  .hex { font-size: 10.5px; color: var(--c-text-muted); font-family: ui-monospace, Menlo, monospace; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="grid">
+      <div class="sw"><div class="chip" style="background:var(--c-accent)"></div><div class="meta"><div class="nm">accent</div><div class="hex">#1C335C</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-accent-soft)"></div><div class="meta"><div class="nm">accent-soft</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-surface)"></div><div class="meta"><div class="nm">surface</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-bg)"></div><div class="meta"><div class="nm">bg</div><div class="hex">#F6F7FA</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-text)"></div><div class="meta"><div class="nm">text</div></div></div>
+    </div>
+  </div>
+</body>
+</html>

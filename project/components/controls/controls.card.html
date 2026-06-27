@@ -1,0 +1,35 @@
+<!-- @dsCard group="Components" viewport="700x140" name="Controls" subtitle="ViewToggle — segmented control" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 28px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+function ViewToggle({ value, onChange, options }) {
+  return <div style={{display:'inline-flex',padding:3,background:'var(--c-surface)',borderRadius:999}}>
+    {options.map(o=>{const a=o.value===value;return <button key={o.value} onClick={()=>onChange(o.value)} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:999,fontSize:12,fontWeight:600,lineHeight:1,background:a?'var(--c-accent)':'transparent',color:a?'var(--c-accent-fg)':'var(--c-text-soft)',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{o.label}</button>;})}
+  </div>;
+}
+function Demo() {
+  const [v,setV] = useState('lista');
+  const [v2,setV2] = useState('hoje');
+  return <div className="wrap">
+    <ViewToggle value={v} onChange={setV} options={[{value:'lista',label:'Lista'},{value:'tl',label:'Linha do tempo'}]}/>
+    <ViewToggle value={v2} onChange={setV2} options={[{value:'hoje',label:'Hoje'},{value:'sem',label:'Semana'},{value:'mes',label:'Mês'}]}/>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script>
+</body>
+</html>

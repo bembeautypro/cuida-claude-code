@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cuida · Dev Handoff v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cuida/tokens.css">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body,#root{margin:0;padding:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:#f8f6f0;color:var(--c-text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+code,pre{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;
+  background:var(--c-text);padding:24px 0 40px;display:flex;flex-direction:column;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.sidebar__logo{display:flex;align-items:center;gap:8px;padding:0 20px 24px;
+  font-family:"Plus Jakarta Sans",system-ui;font-size:17px;font-weight:600;color:var(--c-accent-fg);
+  border-bottom:1px solid rgba(254,243,225,.08)}
+.sidebar__version{font-size:10px;background:rgba(254,243,225,.1);color:rgba(254,243,225,.55);
+  padding:2px 8px;border-radius:999px;margin-left:auto}
+.nav-group{margin-top:20px;padding:0 12px}
+.nav-group__label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(254,243,225,.3);padding:0 8px 8px}
+.nav-item{display:block;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:500;
+  color:rgba(254,243,225,.6);text-decoration:none;transition:all .12s}
+.nav-item:hover{background:rgba(254,243,225,.07);color:rgba(254,243,225,.9)}
+.nav-item.active{background:rgba(254,243,225,.12);color:var(--c-accent-fg)}
+.sidebar__bottom{margin-top:auto;padding:20px 20px 0;font-size:11px;color:rgba(254,243,225,.3);
+  border-top:1px solid rgba(254,243,225,.06)}
+
+/* Main */
+.main{flex:1;overflow-x:hidden;padding:0 0 120px}
+.page-header{padding:48px 52px 40px;background:var(--c-card);border-bottom:1px solid var(--c-line)}
+.page-header h1{font-size:38px;font-weight:600;letter-spacing:-0.025em;margin:0 0 8px}
+.page-header p{font-size:15px;color:var(--c-text-soft);max-width:560px;margin:0}
+.page-header__badges{display:flex;gap:8px;margin-top:14px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;font-family:inherit}
+.badge--accent{background:var(--c-accent);color:var(--c-accent-fg)}
+.badge--soft{background:var(--c-surface);color:var(--c-text)}
+.badge--outline{background:transparent;border:1px solid var(--c-line-strong);color:var(--c-text-soft)}
+
+/* Sections */
+.section{padding:48px 52px;border-bottom:1px solid var(--c-line)}
+.section:nth-child(odd){background:var(--c-card)}
+.section:nth-child(even){background:var(--c-bg)}
+.section h2{font-size:22px;font-weight:600;letter-spacing:-0.015em;margin:0 0 6px}
+.section__sub{font-size:13px;color:var(--c-text-soft);margin-bottom:28px}
+.section__id{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-muted);
+  float:right;margin-top:4px}
+
+/* Code block */
+.code-block{background:var(--c-text);color:#e8e4dd;border-radius:16px;overflow:hidden;margin:16px 0}
+.code-block__header{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
+.code-block__lang{font-size:11px;font-weight:600;color:rgba(254,243,225,.5);letter-spacing:.08em;text-transform:uppercase}
+.code-block__copy{background:rgba(254,243,225,.08);border:none;color:rgba(254,243,225,.7);
+  padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.code-block__copy:hover{background:rgba(254,243,225,.15)}
+.code-block__body{padding:18px 20px;font-size:12px;line-height:1.65;overflow-x:auto;white-space:pre}
+.token-var{color:#98c379}.token-val{color:#e5c07b}.token-comment{color:#7f8c8d}
+.token-key{color:#61afef}.token-str{color:#98c379}.token-num{color:#d19a66}
+
+/* Tables */
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--c-line);font-size:13px}
+.table th{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-muted);background:var(--c-surface)}
+.table td code{background:var(--c-surface);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--c-accent)}
+.table td .type{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:rgb(82,36,88)}
+.table td .default{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-muted)}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:rgba(0,0,0,.02)}
+
+/* Color grid */
+.color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.color-swatch{border-radius:12px;overflow:hidden;border:1px solid var(--c-line)}
+.color-swatch__chip{height:80px;position:relative}
+.color-swatch__body{padding:10px 12px;background:var(--c-card)}
+.color-swatch__name{font-size:13px;font-weight:600}
+.color-swatch__var{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--c-accent);margin-top:2px}
+.color-swatch__hex{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--c-text-muted)}
+
+/* Component card */
+.comp{background:var(--c-card);border:1px solid var(--c-line);border-radius:18px;margin-bottom:24px;overflow:hidden}
+.comp__header{padding:18px 22px;border-bottom:1px solid var(--c-line);display:flex;align-items:baseline;gap:14px}
+.comp__name{font-size:16px;font-weight:700;letter-spacing:-0.01em}
+.comp__import{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-accent)}
+.comp__preview{padding:22px;border-bottom:1px solid var(--c-line);background:var(--c-surface);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.comp__table{padding:0}
+
+/* Download card */
+.dl-card{background:var(--c-accent);color:var(--c-accent-fg);border-radius:18px;padding:24px 28px;
+  display:flex;align-items:center;gap:20px;margin-bottom:24px}
+.dl-card__icon{width:52px;height:52px;border-radius:14px;background:rgba(254,243,225,.12);display:grid;place-items:center;flex-shrink:0}
+.dl-card__title{font-size:17px;font-weight:600}
+.dl-card__sub{font-size:12px;opacity:.65;margin-top:3px}
+.dl-card__btn{background:var(--c-accent-fg);color:var(--c-accent);border:none;padding:10px 18px;
+  border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:auto}
+
+/* Inline code */
+.ic{display:inline-block;background:var(--c-surface);padding:1px 7px;border-radius:5px;
+  font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--c-accent)}
+</style>
+</head>
+<body data-palette="acolhimento">
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <svg width="22" height="22" viewBox="0 0 32 32"><path d="M16 27S5 20.5 5 12.5C5 8.4 8.4 5 12.5 5c1.6 0 3 .6 3.5 1.5C16.5 5.6 17.9 5 19.5 5 23.6 5 27 8.4 27 12.5 27 20.5 16 27 16 27z" fill="currentColor"/><path d="M11 14h3l1.5-2.5 2 5L19 14h2" stroke="rgb(1,55,61)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      cuida
+      <span class="sidebar__version">v1.0</span>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group__label">Início</div>
+      <a href="#setup" class="nav-item active">Setup</a>
+      <a href="#intro" class="nav-item">Visão geral</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group__label">Tokens</div>
+      <a href="#colors" class="nav-item">Cores</a>
+      <a href="#type" class="nav-item">Tipografia</a>
+      <a href="#spacing" class="nav-item">Espaçamento</a>
+      <a href="#shape" class="nav-item">Forma</a>
+      <a href="#tokens-json" class="nav-item">JSON Export</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group__label">Componentes</div>
+      <a href="#button" class="nav-item">Button</a>
+      <a href="#card" class="nav-item">Card</a>
+      <a href="#avatar" class="nav-item">Avatar</a>
+      <a href="#bar" class="nav-item">Bar</a>
+      <a href="#pill" class="nav-item">Pill / Chip</a>
+      <a href="#toggle" class="nav-item">ViewToggle</a>
+      <a href="#tabbar" class="nav-item">TabBar</a>
+      <a href="#screen" class="nav-item">Screen</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group__label">App</div>
+      <a href="#sitemap" class="nav-item">Mapa de telas</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group__label">Guia</div>
+      <a href="#rn" class="nav-item">React Native</a>
+      <a href="#rules" class="nav-item">Regras</a>
+    </div>
+    <div class="sidebar__bottom">Plus Jakarta Sans<br>CSS Variables · RN StyleSheet</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-header">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--c-text-muted);margin-bottom:10px">Cuida · Design System</div>
+      <h1>Dev Handoff v1.0</h1>
+      <p>Tokens, componentes e padrões de UX exportados para implementação em React Native / PWA. Paleta: <strong>Acolhimento</strong> · Tipografia: <strong>Plus Jakarta Sans</strong></p>
+      <div class="page-header__badges">
+        <button class="badge badge--accent" onclick="downloadTokens()">⬇ tokens.json</button>
+        <button class="badge badge--soft" onclick="downloadCSS()">⬇ tokens.css</button>
+        <a class="badge badge--outline" href="Cuida DS.html" target="_blank">📐 Design System</a>
+        <a class="badge badge--outline" href="Cuida.html" target="_blank">📱 Protótipo</a>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <section class="section" id="setup">
+      <h2>Setup <span class="section__id">/setup</span></h2>
+      <p class="section__sub">Instalação e configuração inicial para web e React Native.</p>
+
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">bash</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-comment"># Instalar a fonte</span>
+npm install @fontsource/plus-jakarta-sans
+
+<span class="token-comment"># React Native (Expo)</span>
+expo install expo-font
+npx expo install @expo-google-fonts/plus-jakarta-sans</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">html</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-comment">&lt;!-- Google Fonts (web) --&gt;</span>
+&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"&gt;
+
+<span class="token-comment">&lt;!-- Tokens CSS --&gt;</span>
+&lt;link rel="stylesheet" href="tokens.css"&gt;</div>
+      </div>
+    </section>
+
+    <!-- COLORS -->
+    <section class="section" id="colors">
+      <h2>Cores <span class="section__id">/tokens/color</span></h2>
+      <p class="section__sub">11 tokens base + 6 semânticos. Use sempre os tokens — nunca valores hex hardcoded.</p>
+
+      <div class="color-grid">
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(38,37,37)"></div><div class="color-swatch__body"><div class="color-swatch__name">Text</div><div class="color-swatch__var">--c-text</div><div class="color-swatch__hex">rgb(38,37,37)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:#fffaf2;border-bottom:1px solid var(--c-line)"></div><div class="color-swatch__body"><div class="color-swatch__name">Background</div><div class="color-swatch__var">--c-bg</div><div class="color-swatch__hex">#fffaf2</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(254,243,225)"></div><div class="color-swatch__body"><div class="color-swatch__name">Surface (Linho)</div><div class="color-swatch__var">--c-surface</div><div class="color-swatch__hex">rgb(254,243,225)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(1,55,61)"></div><div class="color-swatch__body"><div class="color-swatch__name">Accent (Teal)</div><div class="color-swatch__var">--c-accent</div><div class="color-swatch__hex">rgb(1,55,61)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(212,232,230)"></div><div class="color-swatch__body"><div class="color-swatch__name">Accent Soft</div><div class="color-swatch__var">--c-accent-soft</div><div class="color-swatch__hex">rgb(212,232,230)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(254,243,225)"></div><div class="color-swatch__body"><div class="color-swatch__name">Accent Fg</div><div class="color-swatch__var">--c-accent-fg</div><div class="color-swatch__hex">rgb(254,243,225)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(35,100,68)"></div><div class="color-swatch__body"><div class="color-swatch__name">Success</div><div class="color-swatch__var">--c-success</div><div class="color-swatch__hex">rgb(35,100,68)</div></div></div>
+        <div class="color-swatch"><div class="color-swatch__chip" style="background:rgb(170,60,38)"></div><div class="color-swatch__body"><div class="color-swatch__name">Alert</div><div class="color-swatch__var">--c-alert</div><div class="color-swatch__hex">rgb(170,60,38)</div></div></div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="section" id="type">
+      <h2>Tipografia <span class="section__id">/tokens/type</span></h2>
+      <p class="section__sub">Plus Jakarta Sans. Body = 400, headings = 600. Tracking negativo acima de 18px.</p>
+
+      <table class="table">
+        <thead><tr><th>Token</th><th>size</th><th>weight</th><th>letterSpacing</th><th>lineHeight</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>--fs-display</code></td><td>40px</td><td>600</td><td>-0.025em</td><td>1.05</td><td>Hero, boas-vindas</td></tr>
+          <tr><td><code>--fs-h1</code></td><td>32px</td><td>600</td><td>-0.02em</td><td>1.1</td><td>Títulos de tela</td></tr>
+          <tr><td><code>--fs-h2</code></td><td>24px</td><td>600</td><td>-0.015em</td><td>1.15</td><td>Subtítulos</td></tr>
+          <tr><td><code>--fs-h3</code></td><td>20px</td><td>500</td><td>-0.01em</td><td>1.2</td><td>Cabeçalhos de card</td></tr>
+          <tr><td><code>--fs-lg</code></td><td>17px</td><td>400</td><td>0</td><td>1.4</td><td>Lead, copy primário</td></tr>
+          <tr><td><code>--fs-body</code></td><td>15px</td><td>400</td><td>0</td><td>1.45</td><td>Padrão do app</td></tr>
+          <tr><td><code>--fs-sm</code></td><td>13px</td><td>400</td><td>0</td><td>1.4</td><td>Metadata, timestamps</td></tr>
+          <tr><td><code>--fs-xs</code></td><td>11px</td><td>600</td><td>0.12em</td><td>1.3</td><td>Eyebrow, tab label, badge</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">react-native</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-key">const</span> typography = {
+  fontFamily: <span class="token-str">'PlusJakartaSans_400Regular'</span>,
+  fontFamilySemibold: <span class="token-str">'PlusJakartaSans_600SemiBold'</span>,
+  display:  { fontSize: <span class="token-num">40</span>, fontWeight: <span class="token-str">'600'</span>, letterSpacing: <span class="token-num">-1</span>, lineHeight: <span class="token-num">42</span> },
+  h1:       { fontSize: <span class="token-num">32</span>, fontWeight: <span class="token-str">'600'</span>, letterSpacing: <span class="token-num">-0.64</span>, lineHeight: <span class="token-num">35</span> },
+  h2:       { fontSize: <span class="token-num">24</span>, fontWeight: <span class="token-str">'600'</span>, letterSpacing: <span class="token-num">-0.36</span>, lineHeight: <span class="token-num">28</span> },
+  body:     { fontSize: <span class="token-num">15</span>, fontWeight: <span class="token-str">'400'</span>, lineHeight: <span class="token-num">22</span> },
+  sm:       { fontSize: <span class="token-num">13</span>, fontWeight: <span class="token-str">'400'</span>, lineHeight: <span class="token-num">18</span> },
+  eyebrow:  { fontSize: <span class="token-num">11</span>, fontWeight: <span class="token-str">'600'</span>, letterSpacing: <span class="token-num">1.3</span>, textTransform: <span class="token-str">'uppercase'</span> },
+};</div>
+      </div>
+    </section>
+
+    <!-- SPACING -->
+    <section class="section" id="spacing">
+      <h2>Espaçamento <span class="section__id">/tokens/spacing</span></h2>
+      <p class="section__sub">Grade de 8pt. Padding lateral das telas: 20px (--s-5). Gap entre cards: 12–16px.</p>
+      <table class="table">
+        <thead><tr><th>Token</th><th>px</th><th>Uso principal</th></tr></thead>
+        <tbody>
+          <tr><td><code>--s-1</code></td><td>4px</td><td>Gap ícone → texto</td></tr>
+          <tr><td><code>--s-2</code></td><td>8px</td><td>Padding interno de badges</td></tr>
+          <tr><td><code>--s-3</code></td><td>12px</td><td>Gap padrão em flex-rows</td></tr>
+          <tr><td><code>--s-4</code></td><td>16px</td><td>Padding de cards pequenos</td></tr>
+          <tr><td><code>--s-5</code></td><td>20px</td><td>Padding lateral de telas</td></tr>
+          <tr><td><code>--s-6</code></td><td>24px</td><td>Gap entre seções</td></tr>
+          <tr><td><code>--s-7</code></td><td>32px</td><td>Margem entre grupos</td></tr>
+          <tr><td><code>--s-8</code></td><td>40px</td><td>Padding de cards grandes</td></tr>
+          <tr><td><code>--s-9</code></td><td>56px</td><td>Espaço entre seções de tela</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SHAPE -->
+    <section class="section" id="shape">
+      <h2>Forma — Raios <span class="section__id">/tokens/shape</span></h2>
+      <table class="table">
+        <thead><tr><th>Token</th><th>px</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>--r-xs</code></td><td>6px</td><td>Badges pequenos</td></tr>
+          <tr><td><code>--r-sm</code></td><td>10px</td><td>Chips, mini-cards</td></tr>
+          <tr><td><code>--r-md</code></td><td>14px</td><td>Inputs, botões inline</td></tr>
+          <tr><td><code>--r-lg</code></td><td>19px</td><td>Feature cards</td></tr>
+          <tr><td><code>--r-card</code></td><td>22px</td><td>Card padrão do app</td></tr>
+          <tr><td><code>--r-xl</code></td><td>28px</td><td>Modais, cards grandes</td></tr>
+          <tr><td><code>--r-pill</code></td><td>999px</td><td>Botões, toggles, badges pill</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- JSON EXPORT -->
+    <section class="section" id="tokens-json">
+      <h2>Tokens JSON <span class="section__id">/tokens/export</span></h2>
+      <p class="section__sub">Exportado no formato Style Dictionary. Use com Theo, style-dictionary, ou importe direto no RN.</p>
+      <div class="dl-card">
+        <div class="dl-card__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        </div>
+        <div><div class="dl-card__title">cuida-tokens.json</div><div class="dl-card__sub">Style Dictionary format · ~4 KB</div></div>
+        <button class="dl-card__btn" onclick="downloadTokens()">⬇ Download</button>
+      </div>
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">json · trecho</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body">{
+  <span class="token-key">"color"</span>: {
+    <span class="token-key">"text"</span>:        { <span class="token-key">"value"</span>: <span class="token-str">"#262525"</span>, <span class="token-key">"description"</span>: <span class="token-str">"Warm near-black, body text"</span> },
+    <span class="token-key">"bg"</span>:          { <span class="token-key">"value"</span>: <span class="token-str">"#fffaf2"</span> },
+    <span class="token-key">"surface"</span>:     { <span class="token-key">"value"</span>: <span class="token-str">"#FEF3E1"</span>, <span class="token-key">"description"</span>: <span class="token-str">"Cream — card surface, profiles"</span> },
+    <span class="token-key">"accent"</span>:      { <span class="token-key">"value"</span>: <span class="token-str">"#01373D"</span>, <span class="token-key">"description"</span>: <span class="token-str">"Deep teal — primary CTA, active icons"</span> },
+    <span class="token-key">"accentSoft"</span>:  { <span class="token-key">"value"</span>: <span class="token-str">"#D4E8E6"</span> },
+    <span class="token-key">"accentFg"</span>:    { <span class="token-key">"value"</span>: <span class="token-str">"#FEF3E1"</span>, <span class="token-key">"description"</span>: <span class="token-str">"Text on --accent"</span> },
+    <span class="token-key">"success"</span>:     { <span class="token-key">"value"</span>: <span class="token-str">"#236444"</span> },
+    <span class="token-key">"successSoft"</span>: { <span class="token-key">"value"</span>: <span class="token-str">"#DAEBDE"</span> },
+    <span class="token-key">"alert"</span>:       { <span class="token-key">"value"</span>: <span class="token-str">"#AA3C26"</span> },
+    <span class="token-key">"alertSoft"</span>:   { <span class="token-key">"value"</span>: <span class="token-str">"#FCE0D5"</span> },
+    <span class="token-key">"warn"</span>:        { <span class="token-key">"value"</span>: <span class="token-str">"#B46E1E"</span> },
+    <span class="token-key">"warnSoft"</span>:    { <span class="token-key">"value"</span>: <span class="token-str">"#FDE9C8"</span> }
+  },
+  <span class="token-key">"radius"</span>: {
+    <span class="token-key">"sm"</span>: { <span class="token-key">"value"</span>: <span class="token-num">10</span> }, <span class="token-key">"md"</span>: { <span class="token-key">"value"</span>: <span class="token-num">14</span> },
+    <span class="token-key">"card"</span>: { <span class="token-key">"value"</span>: <span class="token-num">22</span> }, <span class="token-key">"pill"</span>: { <span class="token-key">"value"</span>: <span class="token-num">999</span> }
+  }
+}</div>
+      </div>
+    </section>
+
+    <!-- BUTTON -->
+    <section class="section" id="button">
+      <h2>Button <span class="section__id">/components/button</span></h2>
+      <p class="section__sub">Pill radius, peso 600, 150ms transition. Min touch target 44×44px.</p>
+      <div class="comp">
+        <div class="comp__header"><span class="comp__name">Button</span><span class="comp__import">import { Button } from '@cuida/ui'</span></div>
+        <div class="comp__preview" style="flex-wrap:wrap;gap:10px">
+          <button style="background:rgb(1,55,61);color:rgb(254,243,225);border:none;padding:12px 18px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer">Primary</button>
+          <button style="background:rgb(38,37,37);color:#fff;border:none;padding:12px 18px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer">Dark</button>
+          <button style="background:rgb(254,243,225);color:rgb(38,37,37);border:none;padding:12px 18px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer">Soft</button>
+          <button style="background:transparent;color:rgb(38,37,37);border:1.5px solid rgba(38,37,37,.18);padding:12px 18px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer">Outline</button>
+        </div>
+        <table class="table comp__table">
+          <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <tr><td><code>variant</code></td><td class="type">'primary'|'dark'|'soft'|'outline'|'ghost'|'danger'|'success'</td><td class="default">'primary'</td><td>Variante visual</td></tr>
+            <tr><td><code>size</code></td><td class="type">'sm'|'md'|'lg'</td><td class="default">'md'</td><td>sm=8/14 · md=12/18 · lg=16/22 padding</td></tr>
+            <tr><td><code>full</code></td><td class="type">boolean</td><td class="default">false</td><td>width: 100%</td></tr>
+            <tr><td><code>icon</code></td><td class="type">ReactNode</td><td class="default">—</td><td>Ícone à esquerda</td></tr>
+            <tr><td><code>iconRight</code></td><td class="type">ReactNode</td><td class="default">—</td><td>Ícone à direita</td></tr>
+            <tr><td><code>onClick</code></td><td class="type">() => void</td><td class="default">—</td><td>Handler de clique</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">react native — equivalente</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-key">const</span> buttonStyles = {
+  base: {
+    borderRadius: <span class="token-num">999</span>, alignItems: <span class="token-str">'center'</span>, justifyContent: <span class="token-str">'center'</span>,
+    flexDirection: <span class="token-str">'row'</span>, gap: <span class="token-num">8</span>,
+  },
+  primary: { backgroundColor: <span class="token-str">'#01373D'</span> },
+  soft:    { backgroundColor: <span class="token-str">'#FEF3E1'</span> },
+  md:      { paddingVertical: <span class="token-num">12</span>, paddingHorizontal: <span class="token-num">18</span> },
+  label:   { fontFamily: <span class="token-str">'PlusJakartaSans_600SemiBold'</span>, fontSize: <span class="token-num">15</span>, color: <span class="token-str">'#FEF3E1'</span> },
+};</div>
+      </div>
+    </section>
+
+    <!-- CARD -->
+    <section class="section" id="card">
+      <h2>Card / SoftCard <span class="section__id">/components/card</span></h2>
+      <table class="table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>padding</code></td><td class="type">number</td><td class="default">18</td><td>Padding interno uniforme (px)</td></tr>
+          <tr><td><code>radius</code></td><td class="type">number</td><td class="default">22</td><td>border-radius (px)</td></tr>
+          <tr><td><code>background</code></td><td class="type">string</td><td class="default">'var(--c-card)'</td><td>Cor de fundo. SoftCard default: --c-surface</td></tr>
+          <tr><td><code>shadow</code></td><td class="type">boolean</td><td class="default">true</td><td>Card aplica shadow-md; SoftCard = false</td></tr>
+          <tr><td><code>onClick</code></td><td class="type">() => void</td><td class="default">—</td><td>Torna card clicável (cursor: pointer)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- AVATAR -->
+    <section class="section" id="avatar">
+      <h2>Avatar <span class="section__id">/components/avatar</span></h2>
+      <table class="table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td class="type">string</td><td class="default">''</td><td>Gera até 2 iniciais automaticamente</td></tr>
+          <tr><td><code>size</code></td><td class="type">number</td><td class="default">44</td><td>Tamanho em px (sempre circular)</td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="default">'var(--c-surface)'</td><td>Background. Cada perfil tem cor própria</td></tr>
+          <tr><td><code>fg</code></td><td class="type">string</td><td class="default">'var(--c-text)'</td><td>Cor do texto das iniciais</td></tr>
+          <tr><td><code>emoji</code></td><td class="type">string</td><td class="default">—</td><td>Emoji substitui iniciais</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- BAR -->
+    <section class="section" id="bar">
+      <h2>Bar <span class="section__id">/components/bar</span></h2>
+      <p class="section__sub">Barra de progresso — usada para estoque de remédios e onboarding.</p>
+      <table class="table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>value</code></td><td class="type">number</td><td class="default">0</td></tr>
+          <tr><td><code>max</code></td><td class="type">number</td><td class="default">100</td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td class="default">'var(--c-accent)'</td></tr>
+          <tr><td><code>height</code></td><td class="type">number</td><td class="default">6</td></tr>
+          <tr><td><code>bg</code></td><td class="type">string</td><td class="default">'var(--c-line)'</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:var(--c-text-soft);margin-top:8px">Regra: estoque normal → <span class="ic">--c-accent</span>, atenção → <span class="ic">--c-warn</span>, crítico → <span class="ic">--c-alert</span></p>
+    </section>
+
+    <!-- PILL -->
+    <section class="section" id="pill">
+      <h2>Pill / Chip <span class="section__id">/components/pill</span></h2>
+      <table class="table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>active</code></td><td class="type">boolean</td><td>Aplica fundo sólido (default: transparente)</td></tr>
+          <tr><td><code>color</code></td><td class="type">string</td><td>Background quando active</td></tr>
+          <tr><td><code>fg</code></td><td class="type">string</td><td>Texto quando active</td></tr>
+          <tr><td><code>onClick</code></td><td class="type">() => void</td><td>Handler — se ausente, chip é apenas visual</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- VIEWTOGGLE -->
+    <section class="section" id="toggle">
+      <h2>ViewToggle <span class="section__id">/components/viewtoggle</span></h2>
+      <p class="section__sub">Segmented control — para alternar entre 2-3 visualizações (ex: Timeline/Lista, Próximas/Passadas).</p>
+      <table class="table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>value</code></td><td class="type">string</td><td>Valor da opção ativa</td></tr>
+          <tr><td><code>onChange</code></td><td class="type">(v: string) => void</td><td>Callback ao selecionar</td></tr>
+          <tr><td><code>options</code></td><td class="type">Array&lt;{value, label, icon?}&gt;</td><td>Máximo 3 opções recomendado</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- TABBAR -->
+    <section class="section" id="tabbar">
+      <h2>TabBar <span class="section__id">/components/tabbar</span></h2>
+      <p class="section__sub">5 abas fixas na base da tela. Ativo: stroke 2 + accent. Inativo: stroke 1.6 + text-muted. Altura 80px + safe area.</p>
+      <table class="table">
+        <thead><tr><th>Tab ID</th><th>Label</th><th>Ícone</th><th>Tela</th></tr></thead>
+        <tbody>
+          <tr><td><code>'home'</code></td><td>Início</td><td>IconHome</td><td>HomeV3Screen</td></tr>
+          <tr><td><code>'meds'</code></td><td>Remédios</td><td>IconPill</td><td>MedsV2Screen</td></tr>
+          <tr><td><code>'stock'</code></td><td>Estoque</td><td>IconBox</td><td>StockScreen</td></tr>
+          <tr><td><code>'emerg'</code></td><td>SOS</td><td>IconShield</td><td>EmergencyScreen</td></tr>
+          <tr><td><code>'fam'</code></td><td>Família</td><td>IconUsers</td><td>FamilyScreen</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SCREEN -->
+    <section class="section" id="screen">
+      <h2>Screen <span class="section__id">/components/screen</span></h2>
+      <p class="section__sub">Wrapper de tela. Aplica position:absolute, scroll, padding-top 56px (status bar), padding-bottom 90px (tab bar).</p>
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">jsx</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-comment">// Tela com tab bar</span>
+&lt;Screen&gt;
+  &lt;ScreenHeader title=<span class="token-str">"Remédios"</span> eyebrow=<span class="token-str">"Maria"</span> action={&lt;IconButton/&gt;}/&gt;
+  <span class="token-comment">{/* conteúdo scrollável */}</span>
+&lt;/Screen&gt;
+
+<span class="token-comment">// Tela sem tab bar (onboarding, modais)</span>
+&lt;Screen hasTabBar={<span class="token-num">false</span>}&gt;
+  <span class="token-comment">{/* conteúdo */}</span>
+&lt;/Screen&gt;</div>
+      </div>
+    </section>
+
+    <!-- SITEMAP -->
+    <section class="section" id="sitemap">
+      <h2>Mapa de telas <span class="section__id">/app/sitemap</span></h2>
+      <p class="section__sub">34 rotas no protótipo navegável (<span class="ic">Cuida.html</span>). O router (<span class="ic">app.jsx</span> &middot; <span class="ic">screenMap</span>) resolve cada chave para um componente. Abas internas usam <span class="ic">ViewToggle</span>; fluxos de múltiplos passos guardam estado local.</p>
+
+      <table class="table">
+        <thead><tr><th>Rota</th><th>Componente</th><th>Arquivo</th><th>Abas / Estados internos</th></tr></thead>
+        <tbody>
+          <tr><td colspan="4" style="background:var(--c-surface);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-muted)">Tab bar (5)</td></tr>
+          <tr><td><code>home</code></td><td>HomeV3Screen</td><td class="default">healthscreens.jsx</td><td>Timeline / Lista</td></tr>
+          <tr><td><code>meds</code> · <code>meds-v2</code></td><td>MedsV2Screen</td><td class="default">newscreens.jsx</td><td>Em uso / Encerrados / Todos</td></tr>
+          <tr><td><code>stock</code></td><td>StockScreen</td><td class="default">screens.jsx</td><td>Tudo / Crítico</td></tr>
+          <tr><td><code>emerg</code></td><td>EmergencyScreen</td><td class="default">screens.jsx</td><td>Tela de bloqueio / Carteirinha</td></tr>
+          <tr><td><code>fam</code></td><td>FamilyScreen</td><td class="default">screens.jsx</td><td>&mdash;</td></tr>
+
+          <tr><td colspan="4" style="background:var(--c-surface);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-muted)">Saúde (9)</td></tr>
+          <tr><td><code>consultas</code></td><td>ConsultasScreen</td><td class="default">newscreens.jsx</td><td>Próximas / Passadas / Canceladas</td></tr>
+          <tr><td><code>consulta-detail</code></td><td>ConsultaDetailScreen</td><td class="default">healthscreens.jsx</td><td>Preparação / Anotações / Histórico</td></tr>
+          <tr><td><code>exames</code></td><td>ExamesScreen</td><td class="default">newscreens.jsx</td><td>Todos / Pendentes / Realizados</td></tr>
+          <tr><td><code>exames-full</code></td><td>ExamesFullScreen</td><td class="default">healthscreens.jsx</td><td>Todos / Pendentes / Realizados · grupo Atrasados</td></tr>
+          <tr><td><code>prontuarios</code></td><td>ProntuariosScreen</td><td class="default">newscreens.jsx</td><td>Seletor de pessoa · % completo</td></tr>
+          <tr><td><code>resumo-saude</code></td><td>ResumoSaudeScreen</td><td class="default">healthscreens.jsx</td><td>&mdash;</td></tr>
+          <tr><td><code>historico</code></td><td>HistoricoMedicoScreen</td><td class="default">healthscreens.jsx</td><td>Timeline por ano</td></tr>
+          <tr><td><code>vacinas</code></td><td>VacinasScreen</td><td class="default">morescreens.jsx</td><td>Todas / Pendentes / Em dia</td></tr>
+          <tr><td><code>med-detail</code></td><td>MedDetailScreen</td><td class="default">healthscreens.jsx</td><td>Horários · receita · adesão 7d</td></tr>
+
+          <tr><td colspan="4" style="background:var(--c-surface);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-muted)">Fluxos &amp; conta (14)</td></tr>
+          <tr><td><code>add-med</code></td><td>AddMedModalScreen</td><td class="default">states.jsx</td><td>Câmera (reconhecimento)</td></tr>
+          <tr><td><code>add-consulta</code></td><td>AgendarConsultaScreen</td><td class="default">morescreens.jsx</td><td>3 passos: especialidade → data/hora → confirmar</td></tr>
+          <tr><td><code>add-exame</code></td><td>AddExameScreen</td><td class="default">morescreens.jsx</td><td>Tipo · preparo · laudo</td></tr>
+          <tr><td><code>notificacoes</code></td><td>NotificacoesScreen</td><td class="default">morescreens.jsx</td><td>Canais · antecedência · estoque</td></tr>
+          <tr><td><code>edit-profile</code></td><td>EditProfileScreen</td><td class="default">morescreens.jsx</td><td>Dados · saúde · contato</td></tr>
+          <tr><td><code>login</code></td><td>LoginScreen</td><td class="default">morescreens.jsx</td><td>E-mail / Google</td></tr>
+          <tr><td><code>feed</code></td><td>FeedScreen</td><td class="default">screens.jsx</td><td>Atividade da família</td></tr>
+          <tr><td><code>settings</code></td><td>SettingsScreen</td><td class="default">screens.jsx</td><td>Conta · cuidado · privacidade</td></tr>
+          <tr><td><code>plano</code></td><td>PlanoScreen</td><td class="default">accountscreens.jsx</td><td>Anual / Mensal · benefícios · pagamento</td></tr>
+          <tr><td><code>indicar</code></td><td>IndicarScreen</td><td class="default">accountscreens.jsx</td><td>Código · progresso · como funciona</td></tr>
+          <tr><td><code>signup</code></td><td>SignupScreen</td><td class="default">accountscreens.jsx</td><td>Nome / e-mail / senha · termos</td></tr>
+          <tr><td><code>recuperar-senha</code></td><td>RecuperarSenhaScreen</td><td class="default">accountscreens.jsx</td><td>E-mail → enviado (sucesso)</td></tr>
+          <tr><td colspan="4" style="background:var(--c-surface);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-muted)">OCR &amp; colaboração (6)</td></tr>
+          <tr><td><code>receitas</code></td><td>ReceitasScreen</td><td class="default">receitasscreens.jsx</td><td>Câmera / upload → scanning → reconhecido</td></tr>
+          <tr><td><code>receita-confirm</code></td><td>ReceitaConfirmScreen</td><td class="default">receitasscreens.jsx</td><td>Editar meds reconhecidos · confirmar e lançar</td></tr>
+          <tr><td><code>laudo-ocr</code></td><td>LaudoOCRScreen</td><td class="default">receitasscreens.jsx</td><td>Upload laudo → valores extraídos → anexar</td></tr>
+          <tr><td><code>consultas-cal</code></td><td>ConsultasCalendarioScreen</td><td class="default">featurescreens.jsx</td><td>Grade mensal · responsável por evento</td></tr>
+          <tr><td><code>acompanhante</code></td><td>AcompanhanteScreen</td><td class="default">featurescreens.jsx</td><td>Convite familiar · aceitar / recusar</td></tr>
+          <tr><td><code>mensagens</code></td><td>MensagensScreen</td><td class="default">featurescreens.jsx</td><td>Chat grupo família · quick-replies</td></tr>
+        </tbody>
+      </table>
+
+      <p class="section__sub" style="margin-top:28px;margin-bottom:12px">Estados de exceção (em <span class="ic">states.jsx</span>, mostrados no canvas do protótipo): <strong>Empty Home</strong> · <strong>Empty Remédios</strong> · <strong>Alerta</strong> (estoque crítico) · <strong>Sucesso</strong> (streak). Onboarding: fluxo de 7 etapas em <span class="ic">onboarding.jsx</span>.</p>
+
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">jsx · padrão de navegação</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-comment">// Cada tela recebe go(rota) do router. Voltar = go da rota anterior.</span>
+&lt;IconButton onPress={() =&gt; go(<span class="token-str">'meds-v2'</span>)}&gt;&lt;IconArrowL/&gt;&lt;/IconButton&gt;
+
+<span class="token-comment">// Regra: toda tela sem tab bar (hasTabBar=false) PRECISA de uma saída</span>
+<span class="token-comment">// explícita (voltar/fechar/cancelar) — senão vira beco sem saída.</span></div>
+      </div>
+    </section>
+
+    <!-- REACT NATIVE -->
+    <section class="section" id="rn">
+      <h2>React Native — guia rápido <span class="section__id">/rn</span></h2>
+      <p class="section__sub">Adaptações necessárias para React Native + Expo.</p>
+      <div class="code-block">
+        <div class="code-block__header"><span class="code-block__lang">react-native · tokens.ts</span><button class="code-block__copy" onclick="copyCode(this)">Copiar</button></div>
+        <div class="code-block__body"><span class="token-key">export const</span> colors = {
+  text:        <span class="token-str">'#262525'</span>,
+  textSoft:    <span class="token-str">'rgba(38,37,37,0.68)'</span>,
+  bg:          <span class="token-str">'#fffaf2'</span>,
+  card:        <span class="token-str">'#ffffff'</span>,
+  surface:     <span class="token-str">'#FEF3E1'</span>,
+  accent:      <span class="token-str">'#01373D'</span>,
+  accentSoft:  <span class="token-str">'#D4E8E6'</span>,
+  accentFg:    <span class="token-str">'#FEF3E1'</span>,
+  success:     <span class="token-str">'#236444'</span>,
+  successSoft: <span class="token-str">'#DAEBDE'</span>,
+  alert:       <span class="token-str">'#AA3C26'</span>,
+  alertSoft:   <span class="token-str">'#FCE0D5'</span>,
+  warn:        <span class="token-str">'#B46E1E'</span>,
+  warnSoft:    <span class="token-str">'#FDE9C8'</span>,
+  line:        <span class="token-str">'rgba(38,37,37,0.10)'</span>,
+};
+
+<span class="token-key">export const</span> radius = { xs:<span class="token-num">6</span>, sm:<span class="token-num">10</span>, md:<span class="token-num">14</span>, lg:<span class="token-num">19</span>, card:<span class="token-num">22</span>, xl:<span class="token-num">28</span> };
+<span class="token-key">export const</span> spacing = { s1:<span class="token-num">4</span>, s2:<span class="token-num">8</span>, s3:<span class="token-num">12</span>, s4:<span class="token-num">16</span>, s5:<span class="token-num">20</span>, s6:<span class="token-num">24</span>, s7:<span class="token-num">32</span>, s8:<span class="token-num">40</span>, s9:<span class="token-num">56</span> };
+
+<span class="token-key">export const</span> shadow = {
+  md: {
+    shadowColor: <span class="token-str">'#262525'</span>, shadowOffset: { width:<span class="token-num">0</span>, height:<span class="token-num">3</span> },
+    shadowOpacity: <span class="token-num">0.06</span>, shadowRadius: <span class="token-num">10</span>, elevation: <span class="token-num">3</span>,
+  },
+};</div>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section class="section" id="rules">
+      <h2>Regras de implementação <span class="section__id">/rules</span></h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <Rule n="01" title="Cor via token" text="Nunca use #01373D inline. Use colors.accent ou var(--c-accent). Facilita troca de paleta."/>
+        <Rule n="02" title="Touch target ≥ 44px" text="Todo elemento interativo (botão, tab, row, chip) com área mínima de 44×44px."/>
+        <Rule n="03" title="1 CTA primário por tela" text="Nunca duas ações variant=primary visíveis ao mesmo tempo."/>
+        <Rule n="04" title="Feedback ≤ 150ms" text="Toda interação tem resposta visual imediata (opacity, background, scale)."/>
+        <Rule n="05" title="Padding lateral = 20px" text="Todas as telas usam paddingHorizontal: 20 (--s-5). Nunca assimétrico."/>
+        <Rule n="06" title="Cor semântica para status" text="Estoque crítico → alert. Sucesso/confirmado → success. Nunca cor arbitrária."/>
+        <Rule n="07" title="Tipografia em 3 níveis" text="Cada tela: 1 título (h1/h2) + 1 subtítulo + corpo regular. Máx. 3 pesos."/>
+        <Rule n="08" title="Raio generoso em cards" text="Cards de usuário usam --r-card (22px) mínimo. Nunca border-radius: 0 em cards."/>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ── TOKEN DATA ──────────────────────────────────────────────
+const TOKENS_JSON = {
+  "meta": { "name": "Cuida Design System", "version": "1.0.0", "palette": "acolhimento" },
+  "color": {
+    "text":        { "value": "#262525", "description": "Warm near-black, body text" },
+    "textSoft":    { "value": "rgba(38,37,37,0.68)", "description": "Secondary labels, metadata" },
+    "textMuted":   { "value": "rgba(38,37,37,0.46)", "description": "Placeholders, hints" },
+    "bg":          { "value": "#fffaf2", "description": "Page and screen background" },
+    "card":        { "value": "#ffffff", "description": "Card and input surface" },
+    "surface":     { "value": "#FEF3E1", "description": "Cream — informational cards, profiles" },
+    "accent":      { "value": "#01373D", "description": "Deep teal — primary CTA, active icons" },
+    "accentSoft":  { "value": "#D4E8E6", "description": "Icon bg, badges, hover" },
+    "accentFg":    { "value": "#FEF3E1", "description": "Foreground on accent" },
+    "line":        { "value": "rgba(38,37,37,0.10)", "description": "Borders, dividers" },
+    "lineStrong":  { "value": "rgba(38,37,37,0.18)", "description": "Strong borders, focus rings" },
+    "success":     { "value": "#236444" },
+    "successSoft": { "value": "#DAEBDE" },
+    "alert":       { "value": "#AA3C26" },
+    "alertSoft":   { "value": "#FCE0D5" },
+    "warn":        { "value": "#B46E1E" },
+    "warnSoft":    { "value": "#FDE9C8" }
+  },
+  "typography": {
+    "fontFamily": "Plus Jakarta Sans, Helvetica Neue, system-ui, sans-serif",
+    "weights": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700 },
+    "scale": {
+      "display": { "size": "40px", "weight": 600, "letterSpacing": "-0.025em", "lineHeight": 1.05 },
+      "h1":      { "size": "32px", "weight": 600, "letterSpacing": "-0.02em",  "lineHeight": 1.1  },
+      "h2":      { "size": "24px", "weight": 600, "letterSpacing": "-0.015em", "lineHeight": 1.15 },
+      "h3":      { "size": "20px", "weight": 500, "letterSpacing": "-0.01em",  "lineHeight": 1.2  },
+      "lg":      { "size": "17px", "weight": 400, "letterSpacing": "0",        "lineHeight": 1.4  },
+      "body":    { "size": "15px", "weight": 400, "letterSpacing": "0",        "lineHeight": 1.45 },
+      "sm":      { "size": "13px", "weight": 400, "letterSpacing": "0",        "lineHeight": 1.4  },
+      "xs":      { "size": "11px", "weight": 600, "letterSpacing": "0.12em",   "lineHeight": 1.3, "textTransform": "uppercase" }
+    }
+  },
+  "spacing": { "s1":4,"s2":8,"s3":12,"s4":16,"s5":20,"s6":24,"s7":32,"s8":40,"s9":56 },
+  "radius":  { "xs":6,"sm":10,"md":14,"lg":19,"card":22,"xl":28,"pill":999 },
+  "shadow": {
+    "sm": "0 1px 2px rgba(38,37,37,0.04)",
+    "md": "0 1px 2px rgba(38,37,37,0.04), 0 6px 22px rgba(38,37,37,0.05)",
+    "lg": "0 4px 8px rgba(38,37,37,0.06), 0 24px 60px rgba(38,37,37,0.10)"
+  },
+  "components": {
+    "screenPadding": 20,
+    "tabBarHeight": 80,
+    "statusBarHeight": 56,
+    "minTouchTarget": 44
+  }
+};
+
+const TOKENS_CSS = `/* Cuida Design System v1.0 — tokens.css */
+:root {
+  /* Colors */
+  --c-text:        rgb(38, 37, 37);
+  --c-text-soft:   rgba(38, 37, 37, .68);
+  --c-text-muted:  rgba(38, 37, 37, .46);
+  --c-bg:          #fffaf2;
+  --c-card:        #ffffff;
+  --c-surface:     rgb(254, 243, 225);
+  --c-accent:      rgb(1, 55, 61);
+  --c-accent-soft: rgb(212, 232, 230);
+  --c-accent-fg:   rgb(254, 243, 225);
+  --c-line:        rgba(38, 37, 37, .10);
+  --c-line-strong: rgba(38, 37, 37, .18);
+  --c-success:     rgb(35, 100, 68);
+  --c-success-soft:rgb(218, 235, 222);
+  --c-alert:       rgb(170, 60, 38);
+  --c-alert-soft:  rgb(252, 224, 213);
+  --c-warn:        rgb(180, 110, 30);
+  --c-warn-soft:   rgb(253, 233, 200);
+
+  /* Typography */
+  --font: "Plus Jakarta Sans", "Helvetica Neue", system-ui, sans-serif;
+  --fs-display: 40px; --fs-h1: 32px; --fs-h2: 24px; --fs-h3: 20px;
+  --fs-lg: 17px; --fs-body: 15px; --fs-sm: 13px; --fs-xs: 11px;
+
+  /* Spacing (8pt grid) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+
+  /* Radii */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 19px;
+  --r-card: 22px; --r-xl: 28px; --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(38,37,37,.04);
+  --shadow-md: 0 1px 2px rgba(38,37,37,.04), 0 6px 22px rgba(38,37,37,.05);
+  --shadow-lg: 0 4px 8px rgba(38,37,37,.06), 0 24px 60px rgba(38,37,37,.10);
+}`;
+
+function downloadTokens() {
+  const blob = new Blob([JSON.stringify(TOKENS_JSON, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'cuida-tokens.json'; a.click();
+}
+
+function downloadCSS() {
+  const blob = new Blob([TOKENS_CSS], { type: 'text/css' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'cuida-tokens.css'; a.click();
+}
+
+function copyCode(btn) {
+  const text = btn.closest('.code-block').querySelector('.code-block__body').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent; btn.textContent = 'Copiado ✓';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// scroll spy
+const sections = document.querySelectorAll('.section');
+const links = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+<script>
+// Rule component (plain JS)
+function Rule({ n, title, text }) {}
+document.querySelectorAll('[data-rule]').forEach(() => {});
+</script>
+
+<script>
+// Render Rule cards inline
+const ruleContainer = document.querySelector('#rules > div');
+if (ruleContainer && !ruleContainer.children.length) {
+  const rules = [
+    ['01','Cor via token','Nunca use #01373D inline. Use colors.accent ou var(--c-accent). Facilita troca de paleta.'],
+    ['02','Touch target ≥ 44px','Todo elemento interativo (botão, tab, row, chip) com área mínima de 44×44px.'],
+    ['03','1 CTA primário por tela','Nunca duas ações variant=primary visíveis ao mesmo tempo.'],
+    ['04','Feedback ≤ 150ms','Toda interação tem resposta visual imediata (opacity, background, scale).'],
+    ['05','Padding lateral = 20px','Todas as telas usam paddingHorizontal: 20 (--s-5). Nunca assimétrico.'],
+    ['06','Cor semântica para status','Estoque crítico → alert. Sucesso/confirmado → success. Nunca cor arbitrária.'],
+    ['07','Tipografia em 3 níveis','Cada tela: 1 título (h1/h2) + 1 subtítulo + corpo regular. Máx. 3 pesos.'],
+    ['08','Raio generoso em cards','Cards de usuário usam --r-card (22px) mínimo. Nunca border-radius: 0 em cards.'],
+  ];
+  ruleContainer.innerHTML = rules.map(([n,t,d]) => `
+    <div style="background:var(--c-card);border-radius:14px;padding:18px;border:1px solid var(--c-line)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="width:26px;height:26px;border-radius:7px;background:var(--c-accent-soft);color:var(--c-accent);display:grid;place-items:center;font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;flex-shrink:0">${n}</div>
+        <div style="font-size:14px;font-weight:600">${t}</div>
+      </div>
+      <div style="font-size:12px;color:var(--c-text-soft);line-height:1.5;padding-left:36px">${d}</div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>

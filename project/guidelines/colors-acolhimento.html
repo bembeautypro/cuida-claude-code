@@ -1,0 +1,30 @@
+<!-- @dsCard group="Colors" viewport="700x240" name="Acolhimento · paleta padrão" subtitle="Warm linho + esmeralda — o tema padrão do Cuida" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--c-line); }
+  .chip { height: 64px; }
+  .meta { padding: 8px 10px; background: var(--c-card); }
+  .nm { font-size: 12px; font-weight: 600; }
+  .hex { font-size: 10.5px; color: var(--c-text-muted); font-family: ui-monospace, Menlo, monospace; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="grid">
+      <div class="sw"><div class="chip" style="background:var(--c-accent)"></div><div class="meta"><div class="nm">accent</div><div class="hex">#01373D</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-accent-soft)"></div><div class="meta"><div class="nm">accent-soft</div><div class="hex">#D4E8E6</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-surface)"></div><div class="meta"><div class="nm">surface</div><div class="hex">linho</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-bg)"></div><div class="meta"><div class="nm">bg</div><div class="hex">#FFFAF2</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-card);border-bottom:1px solid var(--c-line)"></div><div class="meta"><div class="nm">card</div><div class="hex">#FFFFFF</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--c-text)"></div><div class="meta"><div class="nm">text</div><div class="hex">#262525</div></div></div>
+    </div>
+  </div>
+</body>
+</html>

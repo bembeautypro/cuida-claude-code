@@ -1,0 +1,22 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Sombras" subtitle="--shadow-sm/md/lg — difusas e de baixo contraste" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 30px 26px; display: flex; gap: 30px; align-items: center; }
+  .col { text-align: center; }
+  .box { width: 150px; height: 84px; background: var(--c-card); border-radius: var(--r-card); border: 1px solid var(--c-line); }
+  .lab { font-size: 11px; color: var(--c-text-muted); margin-top: 14px; font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="col"><div class="box" style="box-shadow:var(--shadow-sm)"></div><div class="lab">shadow-sm</div></div>
+    <div class="col"><div class="box" style="box-shadow:var(--shadow-md)"></div><div class="lab">shadow-md</div></div>
+    <div class="col"><div class="box" style="box-shadow:var(--shadow-lg)"></div><div class="lab">shadow-lg</div></div>
+  </div>
+</body>
+</html>

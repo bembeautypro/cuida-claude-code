@@ -1,0 +1,71 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Buttons" subtitle="Button (7 variantes × 3 tamanhos) + IconButton" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+function Button({ children, variant='primary', size='md', icon, iconRight, style }) {
+  const base = { display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, border:'none', cursor:'pointer', fontFamily:'inherit', fontWeight:500, lineHeight:1, borderRadius:999, whiteSpace:'nowrap' };
+  const sizes = { sm:{padding:'8px 14px',fontSize:13}, md:{padding:'12px 18px',fontSize:15}, lg:{padding:'16px 22px',fontSize:16} };
+  const variants = {
+    primary:{background:'var(--c-accent)',color:'var(--c-accent-fg)'},
+    dark:{background:'var(--c-text)',color:'#fff'},
+    soft:{background:'var(--c-surface)',color:'var(--c-text)'},
+    ghost:{background:'transparent',color:'var(--c-text)'},
+    outline:{background:'transparent',color:'var(--c-text)',boxShadow:'inset 0 0 0 1px var(--c-line-strong)'},
+    danger:{background:'var(--c-alert)',color:'#fff'},
+    success:{background:'var(--c-success)',color:'#fff'},
+  };
+  return <button style={{...base,...sizes[size],...variants[variant],...style}}>{icon}{children}{iconRight}</button>;
+}
+function IconButton({ children, size=36, variant='soft' }) {
+  const variants = {
+    soft:{background:'var(--c-surface)',color:'var(--c-text)'},
+    plain:{background:'transparent',color:'var(--c-text)'},
+    outline:{background:'transparent',color:'var(--c-text)',boxShadow:'inset 0 0 0 1px var(--c-line)'},
+    accent:{background:'var(--c-accent)',color:'var(--c-accent-fg)'},
+  };
+  return <button style={{width:size,height:size,borderRadius:999,border:'none',display:'inline-flex',alignItems:'center',justifyContent:'center',cursor:'pointer',...variants[variant]}}>{children}</button>;
+}
+const Plus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>;
+const Arrow = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <div className="wrap">
+    <div className="row">
+      <Button variant="primary">Primary</Button>
+      <Button variant="dark">Dark</Button>
+      <Button variant="soft">Soft</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="success">Success</Button>
+      <Button variant="danger">Danger</Button>
+    </div>
+    <div className="row">
+      <Button variant="primary" size="sm">Small</Button>
+      <Button variant="primary" size="md">Medium</Button>
+      <Button variant="primary" size="lg" iconRight={<Arrow/>}>Large com ícone</Button>
+    </div>
+    <div className="row">
+      <IconButton variant="soft"><Plus/></IconButton>
+      <IconButton variant="outline"><Plus/></IconButton>
+      <IconButton variant="accent" size={42}><Plus/></IconButton>
+      <IconButton variant="plain"><Plus/></IconButton>
+    </div>
+  </div>
+);
+</script>
+</body>
+</html>

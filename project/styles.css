@@ -1,0 +1,6 @@
+/* ================================================================
+   CUIDA — Design System · global entry point
+   Consumers link THIS file. It reaches every token + webfont.
+   ================================================================ */
+@import "tokens/fonts.css";
+@import "cuida/tokens.css";

@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cuida · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cuida/tokens.css">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+/* ── reset ── */
+*,*::before,*::after{box-sizing:border-box}
+html,body,#root{margin:0;padding:0}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,h4,p,ul{margin:0;padding:0}
+ul{list-style:none}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+
+/* ── base ── */
+body{
+  font-family:var(--font-body);
+  background:#f8f6f0;
+  color:var(--c-text);
+  font-size:var(--fs-body);
+  line-height:var(--lh-body);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── layout ── */
+.ds-layout{display:flex;min-height:100vh}
+
+/* ── sidebar ── */
+.ds-sidebar{
+  width:228px;flex-shrink:0;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  background:var(--c-text);
+  padding:28px 0 40px;
+  display:flex;flex-direction:column;
+  scrollbar-width:none;
+}
+.ds-sidebar::-webkit-scrollbar{display:none}
+.ds-sidebar__logo{
+  display:flex;align-items:center;gap:9px;
+  padding:0 22px 28px;
+  font-family:var(--font-display);
+  font-size:18px;font-weight:600;letter-spacing:-0.02em;
+  color:var(--c-accent-fg);
+  border-bottom:1px solid rgba(254,243,225,.08);
+}
+.ds-sidebar__badge{
+  font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 7px;border-radius:999px;
+  background:rgba(254,243,225,.12);color:rgba(254,243,225,.6);
+  margin-left:auto;
+}
+.ds-nav-group{margin-top:24px;padding:0 14px}
+.ds-nav-group__label{
+  font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(254,243,225,.35);
+  padding:0 8px 8px;
+}
+.ds-nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  color:rgba(254,243,225,.65);
+  transition:background .12s ease,color .12s ease;
+  text-decoration:none;
+}
+.ds-nav-item:hover{background:rgba(254,243,225,.07);color:rgba(254,243,225,.9)}
+.ds-nav-item.is-active{background:rgba(254,243,225,.12);color:var(--c-accent-fg)}
+.ds-nav-item__dot{
+  width:18px;height:18px;border-radius:6px;
+  background:rgba(254,243,225,.08);
+  display:grid;place-items:center;font-size:10px;flex-shrink:0;
+}
+.ds-sidebar__version{
+  margin-top:auto;padding:18px 22px 0;
+  font-size:11px;color:rgba(254,243,225,.3);
+  border-top:1px solid rgba(254,243,225,.06);
+}
+
+/* ── main content ── */
+.ds-main{flex:1;overflow-x:hidden;padding:0 0 120px}
+
+/* ── page header ── */
+.ds-page-header{
+  padding:52px 56px 44px;
+  border-bottom:1px solid var(--c-line);
+  background:var(--c-card);
+}
+.ds-page-header__eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--c-text-muted);margin-bottom:10px;
+}
+.ds-page-header__title{
+  font-family:var(--font-display);
+  font-size:42px;font-weight:600;letter-spacing:-0.025em;line-height:1.05;
+  margin-bottom:10px;
+}
+.ds-page-header__sub{
+  font-size:16px;color:var(--c-text-soft);max-width:560px;line-height:1.5;
+}
+
+/* ── section ── */
+.ds-section{padding:52px 56px;border-bottom:1px solid var(--c-line)}
+.ds-section:nth-child(odd){background:var(--c-card)}
+.ds-section:nth-child(even){background:var(--c-bg)}
+.ds-section__header{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:28px;gap:16px;
+}
+.ds-section__title{
+  font-family:var(--font-display);
+  font-size:24px;font-weight:600;letter-spacing:-0.018em;
+}
+.ds-section__num{
+  font-family:ui-monospace,Menlo,monospace;
+  font-size:11px;color:var(--c-text-muted);letter-spacing:.06em;
+}
+.ds-section__desc{
+  font-size:14px;color:var(--c-text-soft);max-width:640px;margin-bottom:32px;line-height:1.55;
+}
+
+/* ── util ── */
+.ds-mono{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-muted);letter-spacing:.03em}
+.ds-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-soft);margin-bottom:8px}
+.ds-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.ds-col{display:flex;flex-direction:column;gap:32px}
+.ds-spec-row{
+  display:grid;grid-template-columns:140px 1fr 220px;
+  gap:24px;align-items:baseline;
+  padding:20px 0;border-bottom:1px solid var(--c-line);
+}
+.ds-spec-row:last-child{border-bottom:none}
+
+/* ── swatches ── */
+.ds-swatch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ds-swatch{border-radius:var(--r-md);overflow:hidden;border:1px solid var(--c-line);background:var(--c-card)}
+.ds-swatch__chip{height:120px;position:relative}
+.ds-swatch__on-dark{
+  position:absolute;bottom:8px;right:8px;
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(0,0,0,.2);color:#fff;padding:3px 7px;border-radius:999px;
+}
+.ds-swatch__body{padding:12px 14px}
+.ds-swatch__name{font-size:14px;font-weight:600;margin-bottom:2px}
+.ds-swatch__token{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--c-accent);margin-bottom:1px}
+.ds-swatch__val{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--c-text-muted)}
+.ds-swatch__usage{font-size:11px;color:var(--c-text-soft);margin-top:6px;line-height:1.4}
+
+/* semantic colours */
+.ds-sem-row{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 18px;border-radius:14px;
+  border:1px solid var(--c-line);
+  background:var(--c-card);
+  margin-bottom:8px;
+}
+.ds-sem-chip{width:36px;height:36px;border-radius:10px;flex-shrink:0}
+.ds-sem-name{font-size:14px;font-weight:600;flex:1}
+.ds-sem-token{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-muted)}
+
+/* ── radii ── */
+.ds-radii{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.ds-radius{
+  background:var(--c-surface);
+  height:100px;display:grid;place-items:center;
+  font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-soft);
+  text-align:center;line-height:1.5;
+  transition:background .15s;
+}
+.ds-radius:hover{background:var(--c-accent-soft)}
+
+/* ── spacing ── */
+.ds-spacing{display:flex;flex-direction:column;gap:10px}
+.ds-spacing-row{display:grid;grid-template-columns:90px 1fr 110px;gap:16px;align-items:center}
+.ds-spacing-bar{height:14px;background:var(--c-accent);border-radius:999px;transition:width .3s}
+.ds-spacing-val{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--c-text-muted);text-align:right}
+
+/* ── shadows ── */
+.ds-shadows{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ds-shadow-card{
+  background:var(--c-card);border-radius:var(--r-card);
+  height:110px;display:grid;place-items:center;
+  font-size:13px;font-weight:600;
+}
+
+/* ── type ── */
+.ds-type-scale{display:flex;flex-direction:column;gap:0}
+
+/* ── icons ── */
+.ds-icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.ds-icon-tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:14px 8px;border-radius:12px;
+  background:var(--c-card);border:1px solid var(--c-line);
+  text-align:center;
+  transition:background .12s,transform .12s;cursor:default;
+}
+.ds-icon-tile:hover{background:var(--c-surface);transform:translateY(-2px)}
+.ds-icon-tile__name{font-family:ui-monospace,Menlo,monospace;font-size:9px;color:var(--c-text-muted);letter-spacing:.03em;line-height:1.3}
+
+/* ── component examples ── */
+.ds-example{
+  background:var(--c-surface);border-radius:var(--r-lg);
+  padding:32px;
+  display:flex;flex-direction:column;gap:12px;
+  margin-bottom:28px;
+  position:relative;
+}
+.ds-example__label{
+  position:absolute;top:12px;right:14px;
+  font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--c-text-muted);
+}
+
+/* ── input ── */
+.ds-input{
+  width:100%;padding:12px 14px;
+  font-size:14px;font-family:inherit;
+  color:var(--c-text);background:var(--c-card);
+  border:1.5px solid var(--c-line);border-radius:12px;
+  outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.ds-input:focus{border-color:var(--c-accent);box-shadow:0 0 0 3px rgba(1,55,61,.08)}
+.ds-input--error{border-color:var(--c-alert)!important}
+.ds-input--success{border-color:var(--c-success)!important}
+.ds-input::placeholder{color:var(--c-text-muted)}
+.ds-input-wrap{position:relative}
+.ds-input-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none}
+.ds-input-hint{font-size:11px;color:var(--c-text-muted);margin-top:4px;padding-left:2px}
+.ds-input-hint--error{color:var(--c-alert)}
+.ds-input-hint--success{color:var(--c-success)}
+
+/* ── do/dont ── */
+.ds-guidance{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.ds-do,.ds-dont{border-radius:var(--r-md);overflow:hidden;border:1.5px solid var(--c-line)}
+.ds-do{border-color:var(--c-success)}
+.ds-dont{border-color:var(--c-alert)}
+.ds-do__header,.ds-dont__header{
+  padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+}
+.ds-do__header{background:var(--c-success-soft);color:var(--c-success)}
+.ds-dont__header{background:var(--c-alert-soft);color:var(--c-alert)}
+.ds-do__body,.ds-dont__body{padding:18px;background:var(--c-card);font-size:13px;line-height:1.5;color:var(--c-text-soft)}
+
+/* ── scroll spy highlight ── */
+:target{scroll-margin-top:24px}
+</style>
+</head>
+<body data-palette="acolhimento">
+<div id="root"></div>
+
+<script type="text/babel" src="cuida/icons.jsx"></script>
+<script type="text/babel" src="cuida/ui.jsx"></script>
+<script type="text/babel" src="cuida/data.jsx"></script>
+
+<script type="text/babel">
+const { useState: useStateDS, useEffect: useEffectDS } = React;
+
+// ─── SIDEBAR ───────────────────────────────────────────────
+const NAV = [
+  { group: 'Fundação',   items: [
+    { id: 'cores',       label: 'Cores',         icon: '🎨' },
+    { id: 'tipo',        label: 'Tipografia',    icon: 'Aa' },
+    { id: 'espaco',      label: 'Espaçamento',   icon: '⬜' },
+    { id: 'forma',       label: 'Forma',         icon: '▢'  },
+    { id: 'sombras',     label: 'Sombras',       icon: '◻'  },
+  ]},
+  { group: 'Primitivos', items: [
+    { id: 'icones',      label: 'Ícones',        icon: '◇'  },
+    { id: 'marca',       label: 'Marca',         icon: '♥'  },
+  ]},
+  { group: 'Componentes', items: [
+    { id: 'botoes',      label: 'Botões',        icon: '⬡'  },
+    { id: 'inputs',      label: 'Inputs',        icon: '☐'  },
+    { id: 'avatares',    label: 'Avatares',      icon: '◉'  },
+    { id: 'chips',       label: 'Chips & Badges',icon: '◈'  },
+    { id: 'cards',       label: 'Cards',         icon: '▭'  },
+    { id: 'feedback',    label: 'Feedback',      icon: '△'  },
+    { id: 'nav',         label: 'Navegação',     icon: '≡'  },
+    { id: 'progress',    label: 'Progress',      icon: '▬'  },
+  ]},
+  { group: 'Padrões', items: [
+    { id: 'telas',       label: 'Padrões de tela', icon: '⬚' },
+    { id: 'guia',        label: 'Guia de uso',      icon: '◻' },
+  ]},
+];
+
+function Sidebar({ active }) {
+  return (
+    <aside className="ds-sidebar">
+      <div className="ds-sidebar__logo">
+        <window.BrandMark size={22} style={{ color: 'var(--c-accent-fg)' }}/>
+        cuida
+        <span className="ds-sidebar__badge">DS 1.0</span>
+      </div>
+      {NAV.map(group => (
+        <div className="ds-nav-group" key={group.group}>
+          <div className="ds-nav-group__label">{group.group}</div>
+          {group.items.map(item => (
+            <a
+              key={item.id}
+              href={'#' + item.id}
+              className={'ds-nav-item' + (active === item.id ? ' is-active' : '')}
+            >
+              <span className="ds-nav-item__dot">{item.icon}</span>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      ))}
+      <div className="ds-sidebar__version">
+        v1.0 · Mai 2026<br/>
+        Plus Jakarta Sans<br/>
+        Tokens CSS Variables
+      </div>
+    </aside>
+  );
+}
+
+// ─── SECTION WRAPPER ───────────────────────────────────────
+function Section({ id, num, title, desc, children }) {
+  return (
+    <section className="ds-section" id={id}>
+      <div className="ds-section__header">
+        <h2 className="ds-section__title">{title}</h2>
+        <span className="ds-section__num">{num}</span>
+      </div>
+      {desc && <p className="ds-section__desc">{desc}</p>}
+      {children}
+    </section>
+  );
+}
+
+// ─── COLORS ────────────────────────────────────────────────
+const COLOR_TOKENS = [
+  { name: 'Text',           token: '--c-text',         val: 'rgb(38, 37, 37)',    usage: 'Corpo, títulos, ícones ativos' },
+  { name: 'Text Soft',      token: '--c-text-soft',    val: 'rgba(38,37,37,.68)', usage: 'Labels secundários, metadata' },
+  { name: 'Text Muted',     token: '--c-text-muted',   val: 'rgba(38,37,37,.46)', usage: 'Placeholders, hints, captions' },
+  { name: 'Background',     token: '--c-bg',           val: '#fffaf2',            usage: 'Fundo da página e telas' },
+  { name: 'Card',           token: '--c-card',         val: '#ffffff',            usage: 'Superfície de cards e inputs' },
+  { name: 'Surface',        token: '--c-surface',      val: 'rgb(254, 243, 225)', usage: 'Linho — cards informativos, perfis' },
+  { name: 'Accent',         token: '--c-accent',       val: 'rgb(1, 55, 61)',     usage: 'Botão primário, ícones ativos, links', dark: true },
+  { name: 'Accent Soft',    token: '--c-accent-soft',  val: 'rgb(212, 232, 230)', usage: 'Fundo de ícones, badges, hover' },
+  { name: 'Accent Fg',      token: '--c-accent-fg',    val: 'rgb(254, 243, 225)', usage: 'Texto sobre --c-accent' },
+  { name: 'Line',           token: '--c-line',         val: 'rgba(38,37,37,.10)', usage: 'Bordas, divisores', border: true },
+  { name: 'Line Strong',    token: '--c-line-strong',  val: 'rgba(38,37,37,.18)', usage: 'Bordas em foco, separadores', border: true },
+];
+
+const SEMANTIC_TOKENS = [
+  { name: 'Success',      token: '--c-success',      bg: 'var(--c-success)',      val: 'rgb(35, 100, 68)' },
+  { name: 'Success Soft', token: '--c-success-soft', bg: 'var(--c-success-soft)', val: 'rgb(218, 235, 222)' },
+  { name: 'Alert',        token: '--c-alert',        bg: 'var(--c-alert)',        val: 'rgb(170, 60, 38)' },
+  { name: 'Alert Soft',   token: '--c-alert-soft',   bg: 'var(--c-alert-soft)',   val: 'rgb(252, 224, 213)' },
+  { name: 'Warn',         token: '--c-warn',         bg: 'var(--c-warn)',         val: 'rgb(180, 110, 30)' },
+  { name: 'Warn Soft',    token: '--c-warn-soft',    bg: 'var(--c-warn-soft)',    val: 'rgb(253, 233, 200)' },
+];
+
+function Colors() {
+  return (
+    <Section id="cores" num="01" title="Cores"
+      desc="Paleta Acolhimento — warm near-black sobre cream, accent em teal escuro. Todo uso de cor passa por um CSS custom property; nunca hardcode valores hex.">
+
+      <div className="ds-swatch-grid">
+        {COLOR_TOKENS.map(c => (
+          <div className="ds-swatch" key={c.token}>
+            <div className="ds-swatch__chip" style={{
+              background: c.val,
+              border: c.border ? '1px dashed var(--c-line-strong)' : 'none',
+            }}>
+              {c.dark && <span className="ds-swatch__on-dark">On-dark: --c-accent-fg</span>}
+            </div>
+            <div className="ds-swatch__body">
+              <div className="ds-swatch__name">{c.name}</div>
+              <div className="ds-swatch__token">{c.token}</div>
+              <div className="ds-swatch__val">{c.val}</div>
+              <div className="ds-swatch__usage">{c.usage}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '36px 0 16px', letterSpacing: '-0.01em' }}>
+        Cores semânticas
+      </h3>
+      {SEMANTIC_TOKENS.map(s => (
+        <div className="ds-sem-row" key={s.token}>
+          <div className="ds-sem-chip" style={{ background: s.bg }}/>
+          <div className="ds-sem-name">{s.name}</div>
+          <div className="ds-sem-token">{s.token}</div>
+          <div className="ds-sem-token">{s.val}</div>
+        </div>
+      ))}
+    </Section>
+  );
+}
+
+// ─── TYPOGRAPHY ─────────────────────────────────────────────
+const TYPE_SCALE = [
+  { label: 'Display',   size: '40px',  weight: 600, ls: '-0.025em', lh: '1.05', token: '--fs-display',  usage: 'Tela de boas-vindas, hero da landing' },
+  { label: 'H1',        size: '32px',  weight: 600, ls: '-0.02em',  lh: '1.1',  token: '--fs-h1',       usage: 'Títulos de seção grande' },
+  { label: 'H2',        size: '24px',  weight: 600, ls: '-0.015em', lh: '1.15', token: '--fs-h2',       usage: 'Subtítulos dentro de telas' },
+  { label: 'H3',        size: '20px',  weight: 500, ls: '-0.01em',  lh: '1.2',  token: '--fs-h3',       usage: 'Cabeçalhos de cards, modais' },
+  { label: 'Large',     size: '17px',  weight: 400, ls: '0',        lh: '1.4',  token: '--fs-lg',       usage: 'Corpo de copy primário, lead text' },
+  { label: 'Body',      size: '15px',  weight: 400, ls: '0',        lh: '1.45', token: '--fs-body',     usage: 'Padrão do app, labels de campo' },
+  { label: 'Small',     size: '13px',  weight: 400, ls: '0',        lh: '1.4',  token: '--fs-sm',       usage: 'Metadata, timestamps, hints' },
+  { label: 'XSmall',    size: '11px',  weight: 600, ls: '0.12em',   lh: '1.3',  token: '--fs-xs',       usage: 'Eyebrow, tab bar label, badge', upper: true },
+];
+
+function Typography() {
+  return (
+    <Section id="tipo" num="02" title="Tipografia"
+      desc="Plus Jakarta Sans em todos os pesos. Body usa 400 (regular); Display e headings usam 600 (semibold). Nunca use peso abaixo de 400 em telas.">
+      <div className="ds-type-scale">
+        {TYPE_SCALE.map(t => (
+          <div className="ds-spec-row" key={t.label}>
+            <div className="ds-label">{t.label}</div>
+            <div style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: t.size, fontWeight: t.weight,
+              letterSpacing: t.ls, lineHeight: t.lh,
+              textTransform: t.upper ? 'uppercase' : 'none',
+              color: 'var(--c-text)',
+            }}>
+              {t.upper ? 'EYEBROW LABEL' : 'O cuidado como prioridade'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div className="ds-mono">{t.token}</div>
+              <div className="ds-mono">{t.size} / {t.weight} / {t.lh} lh</div>
+              <div style={{ fontSize: 11, color: 'var(--c-text-soft)', marginTop: 2, lineHeight: 1.4 }}>{t.usage}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="ds-guidance">
+        <div className="ds-do">
+          <div className="ds-do__header">✓ Faça</div>
+          <div className="ds-do__body">
+            Use peso 600 apenas em títulos e CTAs. Use 400 no corpo. Headings sempre com <code>letter-spacing</code> negativo acima de 18px.
+          </div>
+        </div>
+        <div className="ds-dont">
+          <div className="ds-dont__header">✕ Evite</div>
+          <div className="ds-dont__body">
+            Nunca use peso 300 no app (só aceitável em landpages em telas grandes). Não misture mais de 2 tamanhos em uma mesma linha de texto.
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── SPACING ─────────────────────────────────────────────────
+const SPACING = [
+  { token: '--s-1',  px: 4,  use: 'Gap mínimo entre ícone e texto' },
+  { token: '--s-2',  px: 8,  use: 'Padding interno de badges, separação intra-campo' },
+  { token: '--s-3',  px: 12, use: 'Gap padrão em flex-rows' },
+  { token: '--s-4',  px: 16, use: 'Padding de cards pequenos, gap entre chips' },
+  { token: '--s-5',  px: 20, use: 'Padding lateral de telas (horizontal)' },
+  { token: '--s-6',  px: 24, use: 'Gap entre seções de cards' },
+  { token: '--s-7',  px: 32, use: 'Margem entre grupos de conteúdo' },
+  { token: '--s-8',  px: 40, use: 'Padding interno de cards grandes' },
+  { token: '--s-9',  px: 56, use: 'Espaço entre seções de tela' },
+];
+
+function Spacing() {
+  const max = 56;
+  return (
+    <Section id="espaco" num="03" title="Espaçamento"
+      desc="Grade de 8pt. Use os tokens —  nunca valores arbitrários. Padding lateral das telas: --s-5 (20px). Gap entre cards: --s-3 ou --s-4.">
+      <div className="ds-spacing">
+        {SPACING.map(s => (
+          <div className="ds-spacing-row" key={s.token}>
+            <div className="ds-mono">{s.token}</div>
+            <div>
+              <div className="ds-spacing-bar" style={{ width: (s.px / max) * 100 + '%' }}/>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <span className="ds-mono">{s.px}px</span>
+              <span style={{ fontSize: 11, color: 'var(--c-text-muted)', lineHeight: 1.4, textAlign: 'right', maxWidth: 200 }}>{s.use}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─── SHAPE ───────────────────────────────────────────────────
+const RADII = [
+  { token: '--r-xs',   px: 6,   use: 'Badges, separadores menores' },
+  { token: '--r-sm',   px: 10,  use: 'Chips, mini-cards' },
+  { token: '--r-md',   px: 14,  use: 'Inputs, botões inline' },
+  { token: '--r-lg',   px: 19,  use: 'Feature cards, container-artistas' },
+  { token: '--r-card', px: 22,  use: 'Card padrão do app' },
+  { token: '--r-xl',   px: 28,  use: 'Cards grandes, modais' },
+  { token: '--r-pill', px: 999, use: 'Botões CTA, toggle, badges pill' },
+];
+
+function Shape() {
+  return (
+    <Section id="forma" num="04" title="Forma — Raios"
+      desc="Cards usam raios generosos (19–28px) para transmitir acolhimento. Botões e chips são sempre pill (999px). Nunca use border-radius: 0 em componentes voltados ao usuário.">
+      <div className="ds-radii">
+        {RADII.map(r => (
+          <div key={r.token} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="ds-radius" style={{ borderRadius: Math.min(r.px, 36) }}>
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--c-text)' }}>{r.px === 999 ? '∞' : r.px + 'px'}</div>
+                <div className="ds-mono" style={{ marginTop: 4 }}>{r.token}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--c-text-soft)', lineHeight: 1.4 }}>{r.use}</div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─── SHADOWS ─────────────────────────────────────────────────
+function Shadows() {
+  return (
+    <Section id="sombras" num="05" title="Sombras"
+      desc="Sombras sutis. O sistema usa shadow-sm para separação leve e shadow-md para cards em destaque. Evite shadow-lg exceto em modais e overlays.">
+      <div className="ds-shadows">
+        {[
+          { token: '--shadow-sm',  val: '0 1px 2px rgba(38,37,37,.04)',                          label: 'Shadow SM',  use: 'Inputs, chips em hover' },
+          { token: '--shadow-md',  val: '0 1px 2px rgba(38,37,37,.04), 0 6px 22px rgba(..,0.05)', label: 'Shadow MD', use: 'Cards padrão, form panels' },
+          { token: '--shadow-lg',  val: '0 4px 8px rgba(..,0.06), 0 24px 60px rgba(..,0.10)',     label: 'Shadow LG', use: 'Modais, overlays, bottom sheets' },
+        ].map(s => (
+          <div key={s.token} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="ds-shadow-card" style={{ boxShadow: `var(${s.token})` }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>{s.label}</div>
+                <div className="ds-mono" style={{ marginTop: 4 }}>{s.token}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--c-text-soft)' }}>{s.use}</div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─── ICONS ───────────────────────────────────────────────────
+const ICON_LIST = [
+  ['IconHome','Home'],['IconPill','Pill'],['IconBox','Box'],['IconShield','Shield'],
+  ['IconUsers','Users'],['IconChat','Chat'],['IconGear','Gear'],['IconBell','Bell'],
+  ['IconPlus','Plus'],['IconCheck','Check'],['IconClose','Close'],['IconChevR','ChevR'],
+  ['IconChevL','ChevL'],['IconChevD','ChevD'],['IconClock','Clock'],['IconCamera','Camera'],
+  ['IconQr','QR'],['IconShare','Share'],['IconWhatsApp','WhatsApp'],['IconHeart','Heart'],
+  ['IconCalendar','Calendar'],['IconUser','User'],['IconArrowR','ArrowR'],['IconArrowL','ArrowL'],
+  ['IconSearch','Search'],['IconMoreH','MoreH'],['IconMoreV','MoreV'],['IconLink','Link'],
+  ['IconPrint','Print'],['IconAlert','Alert'],['IconInfo','Info'],['IconMoon','Moon'],
+  ['IconSun','Sun'],['IconLock','Lock'],['IconDroplet','Droplet'],['IconPhone','Phone'],
+];
+
+function Icons() {
+  const [copied, setCopied] = useStateDS(null);
+  function copy(name) {
+    setCopied(name);
+    setTimeout(() => setCopied(null), 1200);
+  }
+  return (
+    <Section id="icones" num="06" title="Ícones"
+      desc="Line style · 24×24 · strokeWidth 1.6 · strokeLinecap round. Todos exportados de window.* — use <IconName size={N}/> em JSX. Clique no ícone para copiar o nome.">
+      <div className="ds-icon-grid">
+        {ICON_LIST.map(([comp, name]) => {
+          const I = window[comp];
+          if (!I) return null;
+          return (
+            <div className="ds-icon-tile" key={comp} onClick={() => copy(comp)}>
+              <I size={24} style={{ color: copied === comp ? 'var(--c-success)' : 'var(--c-accent)' }}/>
+              <div className="ds-icon-tile__name">{copied === comp ? 'copiado!' : name}</div>
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ marginTop: 18, fontSize: 12, color: 'var(--c-text-muted)' }}>
+        Use sempre <code style={{ fontFamily: 'ui-monospace,Menlo,monospace', background: 'var(--c-surface)', padding: '2px 6px', borderRadius: 4 }}>stroke={'{1.6}'}</code> por padrão. Use <code style={{ fontFamily: 'ui-monospace,Menlo,monospace', background: 'var(--c-surface)', padding: '2px 6px', borderRadius: 4 }}>stroke={'{2}'}</code> para ícones em estado ativo.
+      </p>
+    </Section>
+  );
+}
+
+// ─── MARCA ────────────────────────────────────────────────────
+function Marca() {
+  return (
+    <Section id="marca" num="07" title="Marca — Wordmark"
+      desc='Símbolo coração (opção B escolhida) + wordmark "cuida" em lowercase, Plus Jakarta Sans 600. Nunca altere proporções, nem mude o símbolo isolado de cor sem aprovação.'>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        {[
+          { bg: 'var(--c-bg)',     label: 'Sobre fundo claro', color: 'var(--c-accent)' },
+          { bg: 'var(--c-accent)', label: 'Sobre teal escuro', color: 'var(--c-accent-fg)' },
+          { bg: 'var(--c-surface)',label: 'Sobre cream',       color: 'var(--c-accent)' },
+        ].map(v => (
+          <div key={v.label} style={{
+            background: v.bg, borderRadius: 'var(--r-lg)',
+            height: 140, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 10,
+            border: '1px solid var(--c-line)',
+          }}>
+            <window.CuidaWordmark size={24} variant="heart" color={v.color}/>
+            <div style={{ fontSize: 11, color: v.color, opacity: .5, letterSpacing: '.08em', textTransform: 'uppercase' }}>{v.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="ds-guidance" style={{ marginTop: 20 }}>
+        <div className="ds-do">
+          <div className="ds-do__header">✓ Faça</div>
+          <div className="ds-do__body">Use sempre marca + wordmark juntos em contextos de branding. Símbolo isolado aceito em ícone de app, favicon e contextos onde espaço é limitado.</div>
+        </div>
+        <div className="ds-dont">
+          <div className="ds-dont__header">✕ Evite</div>
+          <div className="ds-dont__body">Não use o símbolo em cores fora da paleta. Não coloque o wordmark em caixa alta. Não aplique a marca sobre fotografias sem overlay.</div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── BUTTONS ─────────────────────────────────────────────────
+function Buttons() {
+  const { Button, IconButton } = window;
+  return (
+    <Section id="botoes" num="08" title="Botões"
+      desc="Pill radius (999px), peso 600, transição de 150ms. Mínimo de área clicável: 44×44px. Use variant='primary' para ação principal; nunca duas primárias na mesma tela.">
+
+      <div className="ds-example">
+        <div className="ds-example__label">Variantes</div>
+        <div className="ds-label">Padrão (size=md)</div>
+        <div className="ds-grid">
+          <Button variant="primary">Primary</Button>
+          <Button variant="dark">Dark</Button>
+          <Button variant="soft">Soft</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="ghost">Ghost →</Button>
+          <Button variant="danger">Danger</Button>
+          <Button variant="success">Success</Button>
+        </div>
+
+        <div className="ds-label" style={{ marginTop: 20 }}>Tamanhos</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          <Button variant="primary" size="sm">Small</Button>
+          <Button variant="primary" size="md">Medium</Button>
+          <Button variant="primary" size="lg">Large</Button>
+        </div>
+
+        <div className="ds-label" style={{ marginTop: 20 }}>Com ícone</div>
+        <div className="ds-grid">
+          <Button variant="primary" icon={<window.IconPlus size={16}/>}>Adicionar remédio</Button>
+          <Button variant="soft" icon={<window.IconWhatsApp size={16}/>}>WhatsApp</Button>
+          <Button variant="outline" iconRight={<window.IconArrowR size={16}/>}>Ver mais</Button>
+        </div>
+
+        <div className="ds-label" style={{ marginTop: 20 }}>Largura total</div>
+        <Button variant="primary" full size="lg">Entrar na lista de espera</Button>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Icon Buttons</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          <IconButton variant="soft"><window.IconBell size={20}/></IconButton>
+          <IconButton variant="accent"><window.IconPlus size={20}/></IconButton>
+          <IconButton variant="outline"><window.IconGear size={20}/></IconButton>
+          <IconButton variant="plain"><window.IconClose size={20}/></IconButton>
+          <IconButton size={52} variant="accent"><window.IconShield size={24}/></IconButton>
+        </div>
+        <div className="ds-mono" style={{ marginTop: 10 }}>
+          {'<IconButton variant="soft|accent|outline|plain" size={36}/>'}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── INPUTS ──────────────────────────────────────────────────
+function Inputs() {
+  const [val, setVal] = useStateDS('');
+  const [err, setErr] = useStateDS('');
+  return (
+    <Section id="inputs" num="09" title="Inputs & Formulários"
+      desc="Inputs com border 1.5px, radius 12px. Foco adiciona ring teal de 3px. Nunca remova o estado de foco — acessibilidade obrigatória.">
+
+      <div className="ds-example">
+        <div className="ds-example__label">Estados</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <div className="ds-label">Default</div>
+            <input className="ds-input" placeholder="Seu primeiro nome"/>
+            <div className="ds-input-hint">Texto auxiliar opcional</div>
+          </div>
+          <div>
+            <div className="ds-label">Focus (clique para ver)</div>
+            <input className="ds-input" placeholder="Clique aqui" autoFocus={false}
+              onFocus={e => e.target.style.borderColor = 'var(--c-accent)'}
+              onBlur={e => e.target.style.borderColor = ''}/>
+          </div>
+          <div>
+            <div className="ds-label">Error</div>
+            <div className="ds-input-wrap">
+              <input className="ds-input ds-input--error" value="joao@" onChange={() => {}} readOnly/>
+              <span className="ds-input-icon"><window.IconAlert size={16} style={{ color: 'var(--c-alert)' }}/></span>
+            </div>
+            <div className="ds-input-hint ds-input-hint--error">E-mail inválido</div>
+          </div>
+          <div>
+            <div className="ds-label">Success</div>
+            <div className="ds-input-wrap">
+              <input className="ds-input ds-input--success" value="joao@email.com" onChange={() => {}} readOnly/>
+              <span className="ds-input-icon"><window.IconCheck size={16} style={{ color: 'var(--c-success)' }}/></span>
+            </div>
+            <div className="ds-input-hint ds-input-hint--success">E-mail válido</div>
+          </div>
+          <div>
+            <div className="ds-label">Disabled</div>
+            <input className="ds-input" placeholder="Campo desabilitado" disabled
+              style={{ opacity: .45, cursor: 'not-allowed' }}/>
+          </div>
+          <div>
+            <div className="ds-label">Preenchido</div>
+            <input className="ds-input" defaultValue="Carla Almeida"/>
+          </div>
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Chips / Multi-select</div>
+        <div className="ds-label">Quem você cuida?</div>
+        <ChipSelect opts={['Meus pais', 'Cônjuge', 'Filho(a)', 'Eu mesmo', 'Outra pessoa']}/>
+      </div>
+    </Section>
+  );
+}
+
+function ChipSelect({ opts }) {
+  const [sel, setSel] = useStateDS([]);
+  const toggle = (v) => setSel(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+      {opts.map(o => (
+        <button key={o} onClick={() => toggle(o)} style={{
+          padding: '9px 16px', borderRadius: 999,
+          fontSize: 13, fontWeight: 500, lineHeight: 1,
+          border: '1.5px solid ' + (sel.includes(o) ? 'var(--c-accent)' : 'var(--c-line-strong)'),
+          background: sel.includes(o) ? 'var(--c-accent)' : 'transparent',
+          color: sel.includes(o) ? 'var(--c-accent-fg)' : 'var(--c-text)',
+          cursor: 'pointer', fontFamily: 'inherit',
+          transition: 'all .15s ease',
+        }}>{o}</button>
+      ))}
+    </div>
+  );
+}
+
+// ─── AVATARES ─────────────────────────────────────────────────
+function Avatares() {
+  const { Avatar } = window;
+  const profiles = window.CUIDA_DATA.PROFILES;
+  return (
+    <Section id="avatares" num="10" title="Avatares"
+      desc="Sempre circular. Usa iniciais quando não há foto. Cor de fundo é a cor do perfil (cada perfil tem cor própria). Nunca altere a proporção 1:1.">
+      <div className="ds-example">
+        <div className="ds-example__label">Tamanhos</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          {[24, 32, 44, 54, 72, 96].map(s => (
+            <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Avatar name="Carla Almeida" color="rgb(218,235,222)" fg="rgb(35,100,68)" size={s}/>
+              <span className="ds-mono">{s}px</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="ds-label" style={{ marginTop: 24 }}>Por perfil (cada perfil tem cor própria)</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          {profiles.map(p => (
+            <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Avatar name={p.name} color={p.color} fg={p.fg} size={52}/>
+              <span style={{ fontSize: 11, color: 'var(--c-text-soft)' }}>{p.name}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="ds-label" style={{ marginTop: 24 }}>Estado de alerta</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <Avatar name="Maria" color="rgb(254,220,195)" fg="rgb(122,60,38)" size={52}/>
+            <span style={{
+              position: 'absolute', top: 2, right: 2,
+              width: 14, height: 14, borderRadius: '50%',
+              background: 'var(--c-alert)', border: '2px solid var(--c-bg)',
+            }}/>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--c-text-soft)', maxWidth: 260 }}>
+            Badge de alerta: posição <code>top-right</code>, 14×14px, borda branca 2px
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── CHIPS & BADGES ──────────────────────────────────────────
+function Chips() {
+  const { Pill, Dot, ViewToggle } = window;
+  const [view, setView] = useStateDS('a');
+  return (
+    <Section id="chips" num="11" title="Chips, Badges & Toggle"
+      desc="Chips/Pills para filtros e seleção. Dots para status. ViewToggle para alternar entre 2 visualizações (ex: Timeline/Lista).">
+      <div className="ds-example">
+        <div className="ds-example__label">Pills / Filtros</div>
+        <div className="ds-grid">
+          <Pill active>Tudo · 8</Pill>
+          <Pill active color="var(--c-alert)" fg="#fff">Crítico · 2</Pill>
+          <Pill>Normal</Pill>
+          <Pill>Vencidos</Pill>
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Status Dots</div>
+        <div className="ds-grid" style={{ alignItems: 'center' }}>
+          {[
+            ['var(--c-success)',  'Em dia'],
+            ['var(--c-alert)',    'Atenção'],
+            ['var(--c-warn)',     'Aviso'],
+            ['var(--c-text-muted)','Inativo'],
+          ].map(([c, l]) => (
+            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+              <Dot color={c} size={10}/>{l}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">ViewToggle</div>
+        <ViewToggle
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'a', label: 'Timeline' },
+            { value: 'b', label: 'Lista' },
+          ]}
+        />
+        <div className="ds-mono" style={{ marginTop: 12 }}>
+          {'<ViewToggle value={view} onChange={setView} options={[...]}/>'}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── CARDS ───────────────────────────────────────────────────
+function Cards() {
+  const { Card, SoftCard } = window;
+  return (
+    <Section id="cards" num="12" title="Cards & Superfícies"
+      desc="Card padrão: fundo branco, borda 1px, shadow-md, r-card (22px). SoftCard: sem borda, sem sombra, fundo colorido. Use SoftCard para perfis, alertas e seções informativas.">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+
+        <div>
+          <div className="ds-label">Card (padrão)</div>
+          <Card padding={18} radius={22}>
+            <div style={{ fontSize: 16, fontWeight: 600 }}>Losartana 50mg</div>
+            <div style={{ fontSize: 12, color: 'var(--c-text-soft)', marginTop: 4 }}>Manhã · 07:00 · 1x ao dia</div>
+            <div style={{ marginTop: 10 }}>
+              <window.Bar value={18} max={30}/>
+            </div>
+          </Card>
+          <div className="ds-mono" style={{ marginTop: 8 }}>{'<Card padding={18} radius={22}>'}</div>
+        </div>
+
+        <div>
+          <div className="ds-label">SoftCard (cream)</div>
+          <SoftCard background="var(--c-surface)" padding={18} radius={22}>
+            <div style={{ fontSize: 11, fontWeight: 600, opacity: .65, textTransform: 'uppercase', letterSpacing: '.04em' }}>Mãe · 72 anos</div>
+            <div style={{ fontSize: 20, fontWeight: 600, marginTop: 4 }}>Maria</div>
+            <div style={{ fontSize: 12, color: 'var(--c-text-soft)', marginTop: 6 }}>2 de 4 doses confirmadas</div>
+          </SoftCard>
+          <div className="ds-mono" style={{ marginTop: 8 }}>{'<SoftCard background="var(--c-surface)">'}</div>
+        </div>
+
+        <div>
+          <div className="ds-label">SoftCard (accent)</div>
+          <SoftCard background="var(--c-accent)" padding={18} radius={22}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(254,243,225,.65)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Lista de compras</div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: 'var(--c-accent-fg)', marginTop: 4 }}>2 itens</div>
+            <div style={{ fontSize: 12, color: 'rgba(254,243,225,.65)', marginTop: 6 }}>Comprar até quinta</div>
+          </SoftCard>
+          <div className="ds-mono" style={{ marginTop: 8 }}>{'<SoftCard background="var(--c-accent)">'}</div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── FEEDBACK ─────────────────────────────────────────────────
+function Feedback() {
+  return (
+    <Section id="feedback" num="13" title="Feedback — Alertas & Estados"
+      desc="Três níveis semânticos: success (verde), warn (âmbar), alert (vermelho). Use a versão soft para banners inline; a versão full-color para ações urgentes.">
+
+      <div className="ds-example">
+        <div className="ds-example__label">Banners inline</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { bg: 'var(--c-success-soft)', fg: 'var(--c-success)', icon: <window.IconCheck size={18}/>, title: 'Losartana confirmada', sub: 'Dose das 07:00 · agora' },
+            { bg: 'var(--c-warn-soft)',    fg: 'var(--c-warn)',    icon: <window.IconInfo size={18}/>,  title: 'AAS acaba em 7 dias', sub: 'Adicione à lista de compras' },
+            { bg: 'var(--c-alert-soft)',   fg: 'var(--c-alert)',   icon: <window.IconAlert size={18}/>, title: 'Dose esquecida · Atenolol', sub: 'Atrasada há 1h42' },
+          ].map((b, i) => (
+            <div key={i} style={{
+              background: b.bg, color: b.fg,
+              borderRadius: 14, padding: '12px 14px',
+              display: 'flex', alignItems: 'center', gap: 12,
+            }}>
+              {b.icon}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{b.title}</div>
+                <div style={{ fontSize: 11, opacity: .8, marginTop: 1 }}>{b.sub}</div>
+              </div>
+              <window.IconChevR size={16}/>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Estado de sucesso (form / ação concluída)</div>
+        <div style={{
+          background: 'var(--c-success-soft)',
+          borderRadius: 20, padding: 28,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'var(--c-success)', color: '#fff',
+            display: 'grid', placeItems: 'center',
+            boxShadow: '0 0 0 8px rgba(35,100,68,.12)',
+          }}>
+            <window.IconCheck size={32} stroke={2.5}/>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>Você está na lista.</div>
+          <div style={{ fontSize: 14, color: 'var(--c-text-soft)', maxWidth: 280, lineHeight: 1.4 }}>Quando o Cuida abrir, você é uma das primeiras a saber.</div>
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Empty state</div>
+        <div style={{
+          background: 'var(--c-surface)', borderRadius: 20, padding: 32,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center',
+        }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'var(--c-card)', display: 'grid', placeItems: 'center',
+            color: 'var(--c-accent)', boxShadow: 'var(--shadow-md)',
+          }}>
+            <window.IconPill size={36}/>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 600 }}>Sem remédios ainda</div>
+          <div style={{ fontSize: 13, color: 'var(--c-text-soft)', maxWidth: 220, lineHeight: 1.4 }}>
+            Adicione o primeiro tirando uma foto da caixa.
+          </div>
+          <window.Button variant="primary" icon={<window.IconCamera size={18}/>}>Por foto</window.Button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────
+function Navigation() {
+  const [tab, setTab] = useStateDS('home');
+  return (
+    <Section id="nav" num="14" title="Navegação"
+      desc="Tab bar fixa no fundo, 5 itens. Ícone ativo: stroke 2 + cor accent. Inativo: stroke 1.6 + cor text-muted. Label 10px, 600, uppercase. Altura mínima: 80px + safe area.">
+      <div className="ds-example">
+        <div className="ds-example__label">Tab Bar</div>
+        <div style={{
+          background: 'var(--c-bg)', borderRadius: 20,
+          border: '1px solid var(--c-line)',
+          overflow: 'hidden', position: 'relative',
+          height: 100,
+        }}>
+          <window.TabBar active={tab} onChange={setTab}/>
+        </div>
+        <div style={{ marginTop: 10, fontSize: 12, color: 'var(--c-text-soft)' }}>Interativo · clique nas abas</div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Screen Header</div>
+        <div style={{ background: 'var(--c-bg)', borderRadius: 16, overflow: 'hidden', border: '1px solid var(--c-line)' }}>
+          <window.ScreenHeader
+            title="Remédios"
+            eyebrow="Maria · 4 itens"
+            action={
+              <window.IconButton variant="accent" size={42}>
+                <window.IconPlus size={20}/>
+              </window.IconButton>
+            }
+            style={{ background: 'var(--c-bg)' }}
+          />
+        </div>
+        <div className="ds-mono" style={{ marginTop: 8 }}>
+          {'<ScreenHeader title="..." eyebrow="..." action={<IconButton/>}/>'}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────────
+function Progress() {
+  const { Bar } = window;
+  return (
+    <Section id="progress" num="15" title="Progress & Barras de estoque"
+      desc="Bar component: altura padrão 6px, cor accent. Estoque crítico: cor alert. Transição width de 300ms ease.">
+      <div className="ds-example">
+        <div className="ds-example__label">Barras de estoque</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[
+            { name: 'Losartana 50mg',    value: 18, max: 30, color: 'var(--c-accent)',  label: 'Normal · 18 dias' },
+            { name: 'Sinvastatina 20mg', value: 11, max: 30, color: 'var(--c-warn)',    label: 'Atenção · 11 dias' },
+            { name: 'AAS 100mg',         value: 4,  max: 30, color: 'var(--c-alert)',   label: 'Crítico · 4 dias' },
+          ].map(s => (
+            <div key={s.name}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{s.name}</div>
+                <div style={{ fontSize: 11, color: s.color, fontWeight: 600 }}>{s.label}</div>
+              </div>
+              <Bar value={s.value} max={s.max} color={s.color}/>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="ds-example">
+        <div className="ds-example__label">Onboarding progress</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {[2, 4, 7].map(step => (
+            <div key={step} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ height: 6, flex: 1, background: 'var(--c-line)', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${(step/7)*100}%`, background: 'var(--c-accent)', borderRadius: 999 }}/>
+              </div>
+              <span className="ds-mono">{step}/7</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── SCREEN PATTERNS ──────────────────────────────────────────
+function TelaPatterns() {
+  return (
+    <Section id="telas" num="16" title="Padrões de Tela"
+      desc="Estrutura consistente: StatusBar 56px · Conteúdo scrollável · TabBar 80px+safe. Padding lateral fixo: --s-5 (20px). Nunca padding assimétrico nas telas.">
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div>
+          <div className="ds-label">Anatomia de tela padrão</div>
+          <div style={{
+            background: 'var(--c-bg)', border: '1px solid var(--c-line)',
+            borderRadius: 20, overflow: 'hidden',
+            fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11,
+          }}>
+            {[
+              { h: 56,  bg: 'rgba(254,243,225,.7)', label: 'IOSStatusBar · 56px' },
+              { h: 68,  bg: 'var(--c-card)',         label: 'ScreenHeader (eyebrow + h1 + action)' },
+              { h: 76,  bg: 'var(--c-surface)',      label: 'ProfilePicker (horizontal scroll, 76px)' },
+              { h: 120, bg: 'rgba(212,232,230,.3)',  label: 'Profile hero card (SoftCard)' },
+              { h: 40,  bg: 'rgba(252,224,213,.4)',  label: 'Alert strip (condicional)' },
+              { h: 52,  bg: 'rgba(254,243,225,.5)',  label: 'Section label + ViewToggle' },
+              { h: 88,  bg: 'rgba(255,255,255,.8)',  label: 'Content (scrollável)  · · ·' },
+              { h: 80,  bg: 'rgba(254,243,225,.9)',  label: 'TabBar · 80px + safe area' },
+            ].map((row, i) => (
+              <div key={i} style={{
+                height: row.h, background: row.bg,
+                display: 'flex', alignItems: 'center', paddingLeft: 14,
+                color: 'var(--c-text-soft)', borderBottom: '1px solid var(--c-line)',
+              }}>{row.label}</div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="ds-label">Anatomia de onboarding</div>
+          <div style={{
+            background: 'var(--c-bg)', border: '1px solid var(--c-line)',
+            borderRadius: 20, overflow: 'hidden',
+            fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11,
+          }}>
+            {[
+              { h: 56,  bg: 'rgba(254,243,225,.7)', label: 'IOSStatusBar · 56px' },
+              { h: 56,  bg: 'var(--c-card)',         label: 'OnboardingNav (back + progress bar + N/7)' },
+              { h: 72,  bg: 'rgba(212,232,230,.3)',  label: 'Eyebrow + H1' },
+              { h: 40,  bg: 'var(--c-surface)',      label: 'Subtítulo' },
+              { h: 200, bg: 'rgba(254,243,225,.5)',  label: 'Conteúdo da etapa (variável)' },
+              { h: 80,  bg: 'rgba(1,55,61,.08)',     label: 'Footer fixo: CTA + gradient fade' },
+            ].map((row, i) => (
+              <div key={i} style={{
+                height: row.h, background: row.bg,
+                display: 'flex', alignItems: 'center', paddingLeft: 14,
+                color: 'var(--c-text-soft)', borderBottom: '1px solid var(--c-line)',
+              }}>{row.label}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── GUIA DE USO ──────────────────────────────────────────────
+function Guia() {
+  const rules = [
+    { title: 'Cor única por tela',       desc: 'Cada tela usa no máximo uma superfície colorida destacada (SoftCard do perfil). O resto é card branco ou fundo cream.' },
+    { title: 'Hierarquia de texto 3 níveis', desc: 'Toda tela tem: 1 título (h1/h2), 1 subtítulo/meta (sm/eyebrow), corpo regular. Nunca mais de 3 pesos na mesma view.' },
+    { title: 'Ações primárias no bottom', desc: 'CTAs principais ficam no rodapé da tela (OnboardingFooter) ou na tab bar. Nunca flutue um FAB desnecessário.' },
+    { title: 'Feedback imediato',         desc: 'Toda interação tem resposta visual em ≤ 150ms. Confirmar remédio → opacidade .55 + check verde. Submit → success state.' },
+    { title: 'Espaço como intenção',      desc: 'Grupos de conteúdo relacionado têm gap --s-3 ou --s-4. Grupos separados por seção usam --s-8 ou --s-9.' },
+    { title: 'Paleta no token, não inline', desc: 'Nunca hardcode #FEF3E1. Use sempre var(--c-surface). Facilita troca de paleta global via data-palette="...".' },
+    { title: 'Touch targets ≥ 44px',      desc: 'Todo elemento interativo (botão, tab, chip, toggle, med row) deve ter ao menos 44×44px de área clicável.' },
+    { title: 'Sem mais de 1 CTA primário', desc: 'Em qualquer tela ou modal, apenas um botão variant="primary". Secundário usa soft ou outline.' },
+  ];
+  return (
+    <Section id="guia" num="17" title="Guia de Uso — Regras de Design"
+      desc="Princípios que guiam decisões. Seguir estes pontos garante consistência visual e de experiência em todas as telas.">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {rules.map((r, i) => (
+          <div key={i} style={{
+            background: 'var(--c-card)', borderRadius: 16, padding: '18px 20px',
+            border: '1px solid var(--c-line)',
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: 'var(--c-accent-soft)', color: 'var(--c-accent)',
+                display: 'grid', placeItems: 'center',
+                fontFamily: 'ui-monospace, Menlo, monospace',
+                fontSize: 11, fontWeight: 700,
+                flexShrink: 0,
+              }}>{String(i + 1).padStart(2, '0')}</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>{r.title}</div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--c-text-soft)', lineHeight: 1.55, paddingLeft: 38 }}>{r.desc}</div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// ─── ROOT ─────────────────────────────────────────────────────
+function DSRoot() {
+  const [active, setActive] = useStateDS('cores');
+
+  useEffectDS(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+      },
+      { rootMargin: '-40% 0px -55% 0px' }
+    );
+    document.querySelectorAll('.ds-section').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="ds-layout">
+      <Sidebar active={active}/>
+      <main className="ds-main">
+        <div className="ds-page-header">
+          <div className="ds-page-header__eyebrow">Cuida · Design System</div>
+          <h1 className="ds-page-header__title">cuida DS · v1.0</h1>
+          <p className="ds-page-header__sub">
+            Tokens, componentes e padrões de UX do app Cuida. Toda implementação começa aqui.
+            Paleta: <strong>Acolhimento</strong> · Tipografia: <strong>Plus Jakarta Sans</strong> · Plataforma: <strong>iOS + Android</strong>
+          </p>
+        </div>
+        <Colors/>
+        <Typography/>
+        <Spacing/>
+        <Shape/>
+        <Shadows/>
+        <Icons/>
+        <Marca/>
+        <Buttons/>
+        <Inputs/>
+        <Avatares/>
+        <Chips/>
+        <Cards/>
+        <Feedback/>
+        <Navigation/>
+        <Progress/>
+        <TelaPatterns/>
+        <Guia/>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<DSRoot/>);
+</script>
+</body>
+</html>

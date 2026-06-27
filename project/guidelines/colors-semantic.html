@@ -1,0 +1,42 @@
+<!-- @dsCard group="Colors" viewport="700x200" name="Cores semânticas" subtitle="Sucesso · alerta · atenção — cada uma com par -soft" -->
+<!doctype html>
+<html lang="pt-BR" data-palette="acolhimento">
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body { margin: 0; background: var(--c-bg); font-family: var(--font-body); color: var(--c-text); }
+  .wrap { padding: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .row { display: flex; gap: 8px; align-items: stretch; }
+  .solid { flex: 1; height: 56px; border-radius: var(--r-sm); display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+  .soft { width: 56px; border-radius: var(--r-sm); }
+  .lab { margin-top: 8px; font-size: 12px; font-weight: 600; }
+  .sub { font-size: 11px; color: var(--c-text-muted); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="row">
+        <div class="solid" style="background:var(--c-success);color:#fff">Aa</div>
+        <div class="soft" style="background:var(--c-success-soft)"></div>
+      </div>
+      <div class="lab">success</div><div class="sub">tomado · em dia</div>
+    </div>
+    <div>
+      <div class="row">
+        <div class="solid" style="background:var(--c-alert);color:#fff">Aa</div>
+        <div class="soft" style="background:var(--c-alert-soft)"></div>
+      </div>
+      <div class="lab">alert</div><div class="sub">em falta · crítico</div>
+    </div>
+    <div>
+      <div class="row">
+        <div class="solid" style="background:var(--c-warn);color:#fff">Aa</div>
+        <div class="soft" style="background:var(--c-warn-soft)"></div>
+      </div>
+      <div class="lab">warn</div><div class="sub">vencendo · atenção</div>
+    </div>
+  </div>
+</body>
+</html>
