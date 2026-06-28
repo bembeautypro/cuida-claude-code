@@ -5,6 +5,7 @@ import React, { useState as useStateNS } from 'react';
 import { usePatient } from './lib/PatientContext.jsx';
 import { useMedications } from './lib/hooks/useMedications.js';
 import { useAppointments } from './lib/hooks/useAppointments.js';
+import { useExams } from './lib/hooks/useExams.js';
 import { CUIDA_DATA } from './data.jsx';
 import { Screen, IconButton, ViewToggle, Button, Avatar, Bar, SoftCard, Dot } from './ui.jsx';
 import {
@@ -121,6 +122,7 @@ function mapAppointment(a, i) {
     time: dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     daysAway,
     date: dt.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ' · ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    scheduled_at: a.scheduled_at,
     status: a.status === 'done' || a.status === 'completed' ? 'realizada' : a.status === 'cancelled' ? 'cancelada' : 'agendada',
     prep: a.prep_notes ? [a.prep_notes] : [],
     color: pal.color,
@@ -526,13 +528,56 @@ function MedsV2Screen({ go }) {
   );
 }
 
+const EXAM_PALETTE = [
+  'rgb(212, 232, 230)',
+  'rgb(254, 220, 195)',
+  'rgb(218, 235, 222)',
+  'rgb(252, 224, 213)',
+  'rgb(232, 220, 240)',
+];
+
 // ════════════════════════════════════════════════════════════
 // EXAMES SCREEN
 // ════════════════════════════════════════════════════════════
 function ExamesScreen({ go }) {
+  const { currentPatientId, currentPatient } = usePatient();
+  const { exams: rawExams } = useExams(currentPatientId);
   const [tab, setTab] = useStateNS('todos');
-  const pendentes = EXAMES.filter(e => e.status === 'pendente');
-  const realizados = EXAMES.filter(e => e.status !== 'pendente');
+
+  const usingMock = rawExams.length === 0 && !currentPatientId;
+
+  function mapExam(e, i) {
+    const isPending = e.status === 'pending' || e.status === 'pendente';
+    const isDone = e.status === 'done' || e.status === 'completed' || e.status === 'realizado';
+    const hasResults = e.exam_results?.length > 0;
+    const dt = e.scheduled_at ? new Date(e.scheduled_at) : null;
+    const daysAway = dt ? Math.ceil((dt - new Date()) / 86400000) : null;
+    let status, date;
+    if (isDone && hasResults) {
+      status = 'laudo';
+      date = 'Realizado em ' + (e.performed_at ? new Date(e.performed_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '—');
+    } else if (isDone) {
+      status = 'aguardando';
+      date = 'Realizado em ' + (e.performed_at ? new Date(e.performed_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '—');
+    } else {
+      status = 'pendente';
+      date = dt ? dt.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ' · ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
+    }
+    return {
+      id: e.id,
+      name: e.name,
+      person: currentPatient?.name ?? '',
+      date,
+      daysAway: status === 'pendente' && daysAway > 0 ? daysAway : null,
+      status,
+      color: EXAM_PALETTE[i % EXAM_PALETTE.length],
+      prep: e.prep_notes ?? null,
+    };
+  }
+
+  const exames = usingMock ? EXAMES : rawExams.map(mapExam);
+  const pendentes = exames.filter(e => e.status === 'pendente');
+  const realizados = exames.filter(e => e.status !== 'pendente');
   const shown = tab === 'pendentes' ? pendentes : tab === 'realizados' ? realizados : null;
 
   return (
@@ -684,10 +729,26 @@ function ExameRow({ exam: e }) {
 // PRONTUÁRIOS SCREEN
 // ════════════════════════════════════════════════════════════
 function ProntuariosScreen({ go }) {
+  const { patients, currentPatientId, setCurrentPatientId } = usePatient();
   const [personOpen, setPersonOpen] = useStateNS(false);
-  const [activePerson, setActivePerson] = useStateNS('maria');
-  const profiles = CUIDA_DATA.PROFILES;
-  const person = profiles.find(p => p.id === activePerson) || profiles[0];
+  const usingMock = patients.length === 0 && !currentPatientId;
+  const profiles = usingMock
+    ? CUIDA_DATA.PROFILES
+    : patients.map((p, i) => ({
+        id: p.id,
+        name: p.name,
+        relation: '',
+        age: p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date)) / 31557600000) : null,
+        color: EXAM_PALETTE[i % EXAM_PALETTE.length],
+        fg: 'rgb(1, 55, 61)',
+      }));
+  const activePerson = currentPatientId ?? profiles[0]?.id;
+  const person = profiles.find(p => p.id === activePerson) ?? profiles[0];
+
+  function selectPerson(id) {
+    if (!usingMock && setCurrentPatientId) setCurrentPatientId(id);
+    setPersonOpen(false);
+  }
 
   const completeness = Math.round((PRONTUARIO_SECTIONS.filter(s => s.complete).length / PRONTUARIO_SECTIONS.length) * 100);
 
@@ -734,7 +795,7 @@ function ProntuariosScreen({ go }) {
             boxShadow: 'var(--shadow-md)',
           }}>
             {profiles.map(p => (
-              <button key={p.id} onClick={() => { setActivePerson(p.id); setPersonOpen(false); }} style={{
+              <button key={p.id} onClick={() => selectPerson(p.id)} style={{
                 width: '100%', padding: '12px 16px',
                 background: p.id === activePerson ? 'var(--c-surface)' : 'transparent',
                 border: 'none', display: 'flex', alignItems: 'center', gap: 12,

@@ -395,7 +395,7 @@ function StockScreen({ go }) {
       <ScreenHeader title="Estoque"/>
 
       <div style={{ padding: '0 20px 14px', display: 'flex', gap: 8 }}>
-        <Pill active={filter === 'all'} onClick={() => setFilter('all')} color="var(--c-accent)" fg="var(--c-accent-fg)">Tudo · {D.STOCK_ALL.length}</Pill>
+        <Pill active={filter === 'all'} onClick={() => setFilter('all')} color="var(--c-accent)" fg="var(--c-accent-fg)">Tudo · {stockItems.length}</Pill>
         <Pill active={filter === 'critical'} onClick={() => setFilter('critical')} color="var(--c-alert)" fg="#fff">Crítico · {critical.length}</Pill>
       </div>
 
