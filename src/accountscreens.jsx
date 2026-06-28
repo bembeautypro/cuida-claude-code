@@ -2,6 +2,7 @@
 // PlanoScreen · IndicarScreen · SignupScreen · RecuperarSenhaScreen
 
 import React, { useState as useSA } from 'react';
+import { useAuth } from './lib/AuthContext.jsx';
 import { Screen, Button, IconButton, SoftCard } from './ui.jsx';
 import { IconArrowL, IconCheck, IconChevR, IconHeart, IconWhatsApp, IconShare, IconLock } from './icons.jsx';
 
@@ -223,13 +224,41 @@ function IndicarScreen({ go }) {
 // 3. CRIAR CONTA — signup
 // ════════════════════════════════════════════════════════════
 function SignupScreen({ go }) {
+  const { signUp, signInWithGoogle } = useAuth();
+  const [name, setName] = useSA('');
+  const [email, setEmail] = useSA('');
+  const [password, setPassword] = useSA('');
+  const [focused, setFocused] = useSA(null);
   const [loading, setLoading] = useSA(false);
   const [agree, setAgree] = useSA(true);
+  const [error, setError] = useSA('');
 
-  function handleSignup() {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); go && go('home'); }, 1200);
+  async function handleSignup() {
+    if (!name || !email || !password) { setError('Preencha todos os campos.'); return; }
+    if (!agree) { setError('Aceite os termos para continuar.'); return; }
+    if (password.length < 6) { setError('A senha deve ter ao menos 6 caracteres.'); return; }
+    setLoading(true); setError('');
+    try {
+      await signUp(email, password, name);
+      go && go('home');
+    } catch (e) {
+      setError(e.message || 'Erro ao criar conta. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
+
+  async function handleGoogle() {
+    try { await signInWithGoogle(); } catch (e) { setError(e.message); }
+  }
+
+  const inputStyle = { fontSize: 16, fontWeight: 500, background: 'none', border: 'none', outline: 'none', width: '100%', color: 'var(--c-text)', padding: 0, fontFamily: 'inherit' };
+
+  const fields = [
+    { key: 'name',     label: 'Nome completo', type: 'text',     value: name,     set: setName,     placeholder: 'Seu nome', autoComplete: 'name' },
+    { key: 'email',    label: 'E-mail',         type: 'email',    value: email,    set: setEmail,    placeholder: 'seu@email.com', autoComplete: 'email' },
+    { key: 'password', label: 'Senha',          type: 'password', value: password, set: setPassword, placeholder: '••••••••', autoComplete: 'new-password' },
+  ];
 
   return (
     <Screen hasTabBar={false}>
@@ -248,20 +277,21 @@ function SignupScreen({ go }) {
         </div>
 
         <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[
-            ['Nome completo', 'Carla Almeida', false],
-            ['E-mail', 'carla@email.com', false],
-            ['Senha', '••••••••', true],
-          ].map(([label, val, masked], i) => (
-            <div key={i} style={{
-              background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px',
-              border: '1px solid ' + (i === 0 ? 'var(--c-accent)' : 'var(--c-line)'),
-              boxShadow: i === 0 ? '0 0 0 3px rgba(1,55,61,.07)' : 'none',
-            }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: i === 0 ? 'var(--c-accent)' : 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-              <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: masked ? '.14em' : '0', color: masked ? 'var(--c-text-muted)' : 'var(--c-text)' }}>{val}</div>
-            </div>
-          ))}
+          {fields.map(({ key, label, type, value, set, placeholder, autoComplete }) => {
+            const active = focused === key;
+            return (
+              <div key={key} style={{
+                background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px',
+                border: active ? '1.5px solid var(--c-accent)' : '1px solid var(--c-line)',
+                boxShadow: active ? '0 0 0 3px rgba(1,55,61,.07)' : 'none',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: active ? 'var(--c-accent)' : 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+                <input style={inputStyle} type={type} autoComplete={autoComplete} placeholder={placeholder}
+                  value={value} onChange={e => set(e.target.value)}
+                  onFocus={() => setFocused(key)} onBlur={() => setFocused(null)}/>
+              </div>
+            );
+          })}
         </div>
 
         {/* Terms */}
@@ -280,11 +310,13 @@ function SignupScreen({ go }) {
           </span>
         </button>
 
+        {error && <div style={{ fontSize: 13, color: 'var(--c-alert)', marginTop: 10, textAlign: 'center' }}>{error}</div>}
+
         <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <Button variant="primary" size="lg" full onClick={handleSignup} style={{ opacity: (loading || !agree) ? .6 : 1 }}>
             {loading ? 'Criando conta...' : 'Criar conta'}
           </Button>
-          <Button variant="ghost" size="lg" full>
+          <Button variant="ghost" size="lg" full onClick={handleGoogle}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 18, height: 18, background: '#fff', borderRadius: 4, display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700, color: '#4285F4', boxShadow: '0 0 0 1px var(--c-line)' }}>G</span>
               Continuar com Google
@@ -304,7 +336,25 @@ function SignupScreen({ go }) {
 // 4. RECUPERAR SENHA
 // ════════════════════════════════════════════════════════════
 function RecuperarSenhaScreen({ go }) {
+  const { resetPassword } = useAuth();
+  const [email, setEmail] = useSA('');
+  const [focused, setFocused] = useSA(false);
+  const [loading, setLoading] = useSA(false);
   const [sent, setSent] = useSA(false);
+  const [error, setError] = useSA('');
+
+  async function handleSend() {
+    if (!email) { setError('Informe seu e-mail.'); return; }
+    setLoading(true); setError('');
+    try {
+      await resetPassword(email);
+      setSent(true);
+    } catch (e) {
+      setError(e.message || 'Não foi possível enviar o link. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Screen hasTabBar={false}>
@@ -330,16 +380,23 @@ function RecuperarSenhaScreen({ go }) {
             <div style={{ marginTop: 28 }}>
               <div style={{
                 background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px',
-                border: '1.5px solid var(--c-accent)', boxShadow: '0 0 0 3px rgba(1,55,61,.07)',
+                border: focused ? '1.5px solid var(--c-accent)' : '1px solid var(--c-line)',
+                boxShadow: focused ? '0 0 0 3px rgba(1,55,61,.07)' : 'none',
               }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-accent)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>E-mail</div>
-                <div style={{ fontSize: 16, fontWeight: 500 }}>carla@email.com</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: focused ? 'var(--c-accent)' : 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>E-mail</div>
+                <input
+                  style={{ fontSize: 16, fontWeight: 500, background: 'none', border: 'none', outline: 'none', width: '100%', color: 'var(--c-text)', padding: 0, fontFamily: 'inherit' }}
+                  type="email" autoComplete="email" placeholder="seu@email.com"
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                  onKeyDown={e => e.key === 'Enter' && handleSend()}/>
               </div>
+              {error && <div style={{ fontSize: 13, color: 'var(--c-alert)', marginTop: 10 }}>{error}</div>}
             </div>
 
             <div style={{ marginTop: 'auto', paddingTop: 24 }}>
-              <Button variant="primary" size="lg" full onClick={() => setSent(true)}>
-                Enviar link de recuperação
+              <Button variant="primary" size="lg" full onClick={handleSend} style={{ opacity: loading ? .7 : 1 }}>
+                {loading ? 'Enviando...' : 'Enviar link de recuperação'}
               </Button>
             </div>
           </>
@@ -350,13 +407,13 @@ function RecuperarSenhaScreen({ go }) {
             </div>
             <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>E-mail enviado!</div>
             <div style={{ fontSize: 14, color: 'var(--c-text-soft)', marginTop: 8, lineHeight: 1.5, maxWidth: 280, margin: '8px auto 0' }}>
-              Enviamos um link para <strong style={{ color: 'var(--c-text)' }}>carla@email.com</strong>. Verifique sua caixa de entrada.
+              Enviamos um link para <strong style={{ color: 'var(--c-text)' }}>{email}</strong>. Verifique sua caixa de entrada.
             </div>
             <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <Button variant="primary" size="lg" full onClick={() => go && go('login')}>
                 Voltar para o login
               </Button>
-              <Button variant="ghost" size="md" full onClick={() => setSent(false)}>
+              <Button variant="ghost" size="md" full onClick={() => { setSent(false); setError(''); }}>
                 Reenviar e-mail
               </Button>
             </div>

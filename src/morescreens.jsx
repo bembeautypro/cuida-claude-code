@@ -2,6 +2,7 @@
 // VacinasScreen · LoginScreen · EditProfileScreen
 // AgendarConsultaScreen · AddExameScreen · NotificacoesScreen
 import React, { useState as useSM } from 'react';
+import { useAuth } from './lib/AuthContext.jsx';
 import { CUIDA_DATA } from './data.jsx';
 import { Screen, Button, IconButton, Avatar, ViewToggle } from './ui.jsx';
 import {
@@ -118,12 +119,31 @@ function VacinasScreen({ go }) {
 // 2. LOGIN
 // ════════════════════════════════════════════════════════════
 function LoginScreen({ go }) {
+  const { signIn, signInWithGoogle } = useAuth();
+  const [email, setEmail] = useSM('');
+  const [password, setPassword] = useSM('');
+  const [focused, setFocused] = useSM(null);
   const [loading, setLoading] = useSM(false);
+  const [error, setError] = useSM('');
 
-  function handleLogin() {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); go && go('home'); }, 1200);
+  async function handleLogin() {
+    if (!email || !password) { setError('Preencha e-mail e senha.'); return; }
+    setLoading(true); setError('');
+    try {
+      await signIn(email, password);
+      go && go('home');
+    } catch (e) {
+      setError(e.message || 'E-mail ou senha incorretos.');
+    } finally {
+      setLoading(false);
+    }
   }
+
+  async function handleGoogle() {
+    try { await signInWithGoogle(); } catch (e) { setError(e.message); }
+  }
+
+  const inputStyle = { fontSize: 16, fontWeight: 500, background: 'none', border: 'none', outline: 'none', width: '100%', color: 'var(--c-text)', padding: 0, fontFamily: 'inherit' };
 
   return (
     <Screen hasTabBar={false}>
@@ -145,28 +165,38 @@ function LoginScreen({ go }) {
         <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{
             background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px',
-            border: '1.5px solid var(--c-accent)',
-            boxShadow: '0 0 0 3px rgba(1,55,61,.07)',
+            border: focused === 'email' ? '1.5px solid var(--c-accent)' : '1px solid var(--c-line)',
+            boxShadow: focused === 'email' ? '0 0 0 3px rgba(1,55,61,.07)' : 'none',
           }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-accent)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>E-mail</div>
-            <div style={{ fontSize: 16, fontWeight: 500 }}>carla@email.com</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: focused === 'email' ? 'var(--c-accent)' : 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>E-mail</div>
+            <input style={inputStyle} type="email" autoComplete="email" placeholder="seu@email.com"
+              value={email} onChange={e => setEmail(e.target.value)}
+              onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}/>
           </div>
-          <div style={{ background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px', border: '1px solid var(--c-line)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>Senha</div>
-            <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: '.14em', color: 'var(--c-text-muted)' }}>••••••••</div>
+          <div style={{
+            background: 'var(--c-card)', borderRadius: 16, padding: '14px 18px',
+            border: focused === 'password' ? '1.5px solid var(--c-accent)' : '1px solid var(--c-line)',
+            boxShadow: focused === 'password' ? '0 0 0 3px rgba(1,55,61,.07)' : 'none',
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: focused === 'password' ? 'var(--c-accent)' : 'var(--c-text-soft)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 4 }}>Senha</div>
+            <input style={inputStyle} type="password" autoComplete="current-password" placeholder="••••••••"
+              value={password} onChange={e => setPassword(e.target.value)}
+              onFocus={() => setFocused('password')} onBlur={() => setFocused(null)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}/>
           </div>
           <button style={{
             background: 'transparent', border: 'none',
             color: 'var(--c-accent)', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', textAlign: 'right', padding: '2px 0', fontFamily: 'inherit',
           }} onClick={() => go && go('recuperar-senha')}>Esqueceu a senha?</button>
+          {error && <div style={{ fontSize: 13, color: 'var(--c-alert)', textAlign: 'center', padding: '4px 0' }}>{error}</div>}
         </div>
 
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <Button variant="primary" size="lg" full onClick={handleLogin} style={{ opacity: loading ? .7 : 1 }}>
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
-          <Button variant="ghost" size="lg" full>
+          <Button variant="ghost" size="lg" full onClick={handleGoogle}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 18, height: 18, background: '#fff', borderRadius: 4, display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700, color: '#4285F4', boxShadow: '0 0 0 1px var(--c-line)' }}>G</span>
               Continuar com Google

@@ -1,6 +1,7 @@
 // Cuida — Main app composition
 import React, { useState as useStateApp, useEffect as useEffectApp } from 'react';
 import { AuthProvider, useAuth } from './lib/AuthContext.jsx';
+import { PatientProvider } from './lib/PatientContext.jsx';
 
 // UI + design system
 import { IOSDevice } from './ios-frame.jsx';
@@ -55,8 +56,9 @@ function IPhone({ children, dark, scale }) {
 // MAIN INTERACTIVE PROTOTYPE — single iOS frame with router
 // ════════════════════════════════════════════════════════════
 function InteractivePrototype() {
-  const [screen, setScreen] = useStateApp('home');
-  const [prevScreen, setPrevScreen] = useStateApp('home');
+  const { user } = useAuth();
+  const [screen, setScreen] = useStateApp(() => user ? 'home' : 'login');
+  const [prevScreen, setPrevScreen] = useStateApp(() => user ? 'home' : 'login');
   const [animKey, setAnimKey] = useStateApp(0);
   const tab = ['home','meds','stock','emerg','fam'].includes(screen) ? screen : 'home';
 
@@ -64,7 +66,16 @@ function InteractivePrototype() {
   const TAB_SCREENS = new Set(['home','meds','stock','emerg','fam']);
 
   // History stack for back detection
-  const historyRef = React.useRef(['home']);
+  const historyRef = React.useRef([user ? 'home' : 'login']);
+
+  // Redirect to login on signout
+  useEffectApp(() => {
+    if (user === null) {
+      historyRef.current = ['login'];
+      setPrevScreen('login');
+      setScreen('login');
+    }
+  }, [user]);
 
   function navigate(next) {
     const hist = historyRef.current;
@@ -770,7 +781,7 @@ const TWEAK_DEFAULTS = {
 };
 
 function AppShell() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
   useEffectApp(() => {
@@ -856,7 +867,7 @@ function AppShell() {
         {user && (
           <TweakSection label={`Conta · ${user.email?.split('@')[0]}`}>
             <button
-              onClick={() => import('./lib/AuthContext.jsx').then(m => m.useAuth)}
+              onClick={() => signOut()}
               style={{ fontSize: 12, color: 'var(--c-alert)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', fontFamily: 'inherit' }}
             >
               Sair
@@ -871,7 +882,9 @@ function AppShell() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppShell/>
+      <PatientProvider>
+        <AppShell/>
+      </PatientProvider>
     </AuthProvider>
   );
 }
