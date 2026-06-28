@@ -55,20 +55,19 @@ function IPhone({ children, dark, scale }) {
 // ════════════════════════════════════════════════════════════
 // MAIN INTERACTIVE PROTOTYPE — single iOS frame with router
 // ════════════════════════════════════════════════════════════
-function InteractivePrototype() {
+// APP CONTENT — router + screen map, sem moldura
+// Usado diretamente no AppShell (produção) e no canvas (dentro de IOSDevice)
+// ════════════════════════════════════════════════════════════
+function CuidaAppContent() {
   const { user } = useAuth();
   const [screen, setScreen] = useStateApp(() => user ? 'home' : 'login');
   const [prevScreen, setPrevScreen] = useStateApp(() => user ? 'home' : 'login');
   const [animKey, setAnimKey] = useStateApp(0);
   const tab = ['home','meds','stock','emerg','fam'].includes(screen) ? screen : 'home';
 
-  // Tab-level screens (no slide animation — just switch)
   const TAB_SCREENS = new Set(['home','meds','stock','emerg','fam']);
-
-  // History stack for back detection
   const historyRef = React.useRef([user ? 'home' : 'login']);
 
-  // Redirect to login on signout
   useEffectApp(() => {
     if (user === null) {
       historyRef.current = ['login'];
@@ -126,24 +125,26 @@ function InteractivePrototype() {
     mensagens:          <MensagensScreen go={navigate}/>,
   };
 
-  // Determine animation direction
   const hist = historyRef.current;
   const isBack = hist.length >= 2 && hist[hist.length - 2] === prevScreen;
   const isTabSwitch = TAB_SCREENS.has(screen) && TAB_SCREENS.has(prevScreen);
   const animClass = isTabSwitch ? '' : isBack ? 'cu-screen-back' : 'cu-screen-enter';
 
   return (
-    <IOSDevice width={402} height={874}>
-      <div style={{ position: 'absolute', inset: 0, background: 'var(--c-bg)', overflow: 'hidden' }}>
-        <div
-          key={animKey}
-          className={animClass}
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          {screenMap[screen] || screenMap.home}
-        </div>
-        {screen !== 'add-med' && <TabBar active={tab} onChange={navigate}/>}
+    <div style={{ position: 'absolute', inset: 0, background: 'var(--c-bg)', overflow: 'hidden' }}>
+      <div key={animKey} className={animClass} style={{ position: 'absolute', inset: 0 }}>
+        {screenMap[screen] || screenMap.home}
       </div>
+      {screen !== 'add-med' && <TabBar active={tab} onChange={navigate}/>}
+    </div>
+  );
+}
+
+// Versão com moldura de iPhone — usada no canvas de design
+function InteractivePrototype() {
+  return (
+    <IOSDevice width={402} height={874}>
+      <CuidaAppContent/>
     </IOSDevice>
   );
 }
@@ -820,11 +821,12 @@ function AppShell() {
     );
   }
 
-  // Not logged in — show interactive prototype in "demo" mode
-  // (In production, swap CuidaApp for a proper auth gate screen)
   return (
     <React.Fragment>
-      <CuidaApp/>
+      {/* App em tela cheia — sem moldura de iPhone */}
+      <div style={{ height: '100dvh', position: 'relative' }}>
+        <CuidaAppContent/>
+      </div>
       <TweaksPanel title="Tweaks">
         <TweakSection label="Paleta global">
           <TweakRadio
