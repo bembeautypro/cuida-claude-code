@@ -21,8 +21,8 @@ export function useFamily(patientId) {
 
   useEffect(() => { load(); }, [load]);
 
-  async function invite(email, role, permissions) {
-    const m = await inviteMember(patientId, email, role, permissions);
+  async function invite(email, role) {
+    const m = await inviteMember(patientId, email, role);
     setMembers(prev => [...prev, m]);
     return m;
   }

@@ -10,13 +10,15 @@ export async function getFamilyMembers(patientId) {
   return data;
 }
 
-export async function inviteMember(patientId, email, role, invitedBy) {
-  // Check if user exists
+export async function inviteMember(patientId, email, role) {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Check if invited user already has a profile
   const { data: existing } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', email)
-    .single();
+    .maybeSingle();
 
   const { data, error } = await supabase
     .from('family_members')
@@ -25,7 +27,7 @@ export async function inviteMember(patientId, email, role, invitedBy) {
       user_id: existing?.id ?? null,
       invite_email: email,
       role,
-      invited_by: invitedBy,
+      invited_by: user.id,
       invite_status: 'pending',
       permissions: { view: true, edit: false, admin: false },
     })

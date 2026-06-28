@@ -40,7 +40,7 @@ export async function getTodayDoses(patientId) {
   const today = new Date().toISOString().split('T')[0];
   const { data, error } = await supabase
     .from('dose_logs')
-    .select('*, medications(name, dose)')
+    .select('*, medications(name, dose, unit)')
     .eq('patient_id', patientId)
     .gte('scheduled_at', `${today}T00:00:00`)
     .lte('scheduled_at', `${today}T23:59:59`)
@@ -49,10 +49,11 @@ export async function getTodayDoses(patientId) {
   return data;
 }
 
-export async function confirmDose(logId, userId) {
+export async function confirmDose(logId) {
+  const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase
     .from('dose_logs')
-    .update({ status: 'taken', taken_at: new Date().toISOString(), confirmed_by: userId })
+    .update({ status: 'taken', taken_at: new Date().toISOString(), confirmed_by: user.id })
     .eq('id', logId);
   if (error) throw error;
 }
