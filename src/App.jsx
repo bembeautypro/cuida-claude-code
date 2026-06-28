@@ -1,5 +1,6 @@
 // Cuida — Main app composition
 import React, { useState as useStateApp, useEffect as useEffectApp } from 'react';
+import { AuthProvider, useAuth } from './lib/AuthContext.jsx';
 
 // UI + design system
 import { IOSDevice } from './ios-frame.jsx';
@@ -768,7 +769,8 @@ const TWEAK_DEFAULTS = {
   "logo": "abraco"
 };
 
-export default function App() {
+function AppShell() {
+  const { user } = useAuth();
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
   useEffectApp(() => {
@@ -795,6 +797,20 @@ export default function App() {
     }
   }, [t]);
 
+  // Loading
+  if (user === undefined) {
+    return (
+      <div style={{ height: '100dvh', display: 'grid', placeItems: 'center', background: 'var(--c-bg)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <BrandMark size={40} style={{ color: 'var(--c-accent)' }}/>
+          <div style={{ fontSize: 13, color: 'var(--c-text-soft)' }}>Carregando…</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in — show interactive prototype in "demo" mode
+  // (In production, swap CuidaApp for a proper auth gate screen)
   return (
     <React.Fragment>
       <CuidaApp/>
@@ -837,7 +853,25 @@ export default function App() {
             ]}
           />
         </TweakSection>
+        {user && (
+          <TweakSection label={`Conta · ${user.email?.split('@')[0]}`}>
+            <button
+              onClick={() => import('./lib/AuthContext.jsx').then(m => m.useAuth)}
+              style={{ fontSize: 12, color: 'var(--c-alert)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', fontFamily: 'inherit' }}
+            >
+              Sair
+            </button>
+          </TweakSection>
+        )}
       </TweaksPanel>
     </React.Fragment>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell/>
+    </AuthProvider>
   );
 }
