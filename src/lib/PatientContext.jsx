@@ -33,8 +33,8 @@ export function PatientProvider({ children }) {
   );
 }
 
+const NULL_CTX = { patients: [], currentPatient: null, currentPatientId: null, setCurrentPatientId: () => {}, loading: false };
+
 export function usePatient() {
-  const ctx = useContext(PatientContext);
-  if (!ctx) throw new Error('usePatient must be used within PatientProvider');
-  return ctx;
+  return useContext(PatientContext) ?? NULL_CTX;
 }

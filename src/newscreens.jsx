@@ -2,6 +2,9 @@
 // ConsultasScreen, MedsV2Screen, ExamesScreen, ProntuariosScreen
 
 import React, { useState as useStateNS } from 'react';
+import { usePatient } from './lib/PatientContext.jsx';
+import { useMedications } from './lib/hooks/useMedications.js';
+import { useAppointments } from './lib/hooks/useAppointments.js';
 import { CUIDA_DATA } from './data.jsx';
 import { Screen, IconButton, ViewToggle, Button, Avatar, Bar, SoftCard, Dot } from './ui.jsx';
 import {
@@ -94,15 +97,54 @@ function ProntuarioIcon({ section }) {
 // ════════════════════════════════════════════════════════════
 // CONSULTAS SCREEN
 // ════════════════════════════════════════════════════════════
+const APPT_PALETTE = [
+  { color: 'rgb(212,232,230)', fg: 'rgb(1,55,61)' },
+  { color: 'rgb(218,235,222)', fg: 'rgb(27,77,44)' },
+  { color: 'rgb(254,220,195)', fg: 'rgb(122,60,38)' },
+  { color: 'rgb(232,220,240)', fg: 'rgb(82,36,88)' },
+  { color: 'rgb(207,222,240)', fg: 'rgb(28,51,92)' },
+];
+
+function mapAppointment(a, i) {
+  const dt = new Date(a.scheduled_at);
+  const pal = APPT_PALETTE[i % APPT_PALETTE.length];
+  const daysAway = Math.ceil((dt - new Date()) / 86400000);
+  return {
+    id: a.id,
+    esp: a.specialty ?? 'Consulta',
+    med: a.doctor_name ?? '—',
+    crm: a.location ?? '',
+    local: a.address ?? a.location ?? '',
+    day: dt.getDate(),
+    month: dt.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+    weekday: dt.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+    time: dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    daysAway,
+    date: dt.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ' · ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    status: a.status === 'done' || a.status === 'completed' ? 'realizada' : a.status === 'cancelled' ? 'cancelada' : 'agendada',
+    prep: a.prep_notes ? [a.prep_notes] : [],
+    color: pal.color,
+    fg: pal.fg,
+  };
+}
+
 function ConsultasScreen({ go }) {
+  const { currentPatientId } = usePatient();
+  const { appointments: rawAppts, loading: apptsLoading } = useAppointments(currentPatientId);
   const [tab, setTab] = useStateNS('proximas');
   const [prepOpen, setPrepOpen] = useStateNS(false);
   const [prepChecked, setPrepChecked] = useStateNS({});
-  const next = CONSULTAS[0];
-  const others = CONSULTAS.slice(1).filter(c =>
-    tab === 'proximas' ? c.status === 'agendada' :
-    tab === 'passadas' ? c.status === 'realizada' : c.status === 'cancelada'
-  );
+
+  const usingMock = rawAppts.length === 0 && !currentPatientId;
+  const consultas = usingMock
+    ? CONSULTAS
+    : rawAppts.map(mapAppointment).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+
+  const upcoming = consultas.filter(c => c.status === 'agendada');
+  const next = upcoming[0] ?? consultas[0];
+  const others = (tab === 'proximas' ? consultas.filter(c => c.status === 'agendada').slice(1)
+    : tab === 'passadas' ? consultas.filter(c => c.status === 'realizada')
+    : consultas.filter(c => c.status === 'cancelada'));
 
   return (
     <Screen>
@@ -285,13 +327,42 @@ function ConsultasScreen({ go }) {
 // ════════════════════════════════════════════════════════════
 // MEDICAMENTOS V2 SCREEN
 // ════════════════════════════════════════════════════════════
+const MEDS_PALETTE = [
+  'rgb(254,220,195)', 'rgb(212,232,230)', 'rgb(218,235,222)', 'rgb(232,220,240)', 'rgb(207,222,240)',
+];
+
 function MedsV2Screen({ go }) {
+  const { currentPatientId } = usePatient();
+  const { medications: rawMeds, loading: medsLoading } = useMedications(currentPatientId);
   const [tab, setTab] = useStateNS('emuso');
   const [banner, setBanner] = useStateNS(true);
   const [lembretes, setLembretes] = useStateNS(false);
 
-  const meds = tab === 'emuso' ? MEDS_V2 : tab === 'encerrados' ? [] : MEDS_V2;
-  const streak = 8;
+  const usingMock = rawMeds.length === 0 && !currentPatientId;
+  const allMeds = usingMock
+    ? MEDS_V2
+    : rawMeds.map((m, i) => ({
+        id: m.id,
+        name: m.name,
+        dose: `${m.dose ?? ''}${m.unit ?? ''}`,
+        schedule: m.instructions ?? (m.medication_schedules?.length > 0
+          ? m.medication_schedules.map(s => s.time?.slice(0, 5)).join(', ')
+          : 'Sem horário definido'),
+        nextDose: m.medication_schedules?.[0]?.time?.slice(0, 5) ?? '—',
+        countdown: '',
+        taken: false,
+        color: MEDS_PALETTE[i % MEDS_PALETTE.length],
+        icon: '💊',
+        alert: m.stock_qty !== null && m.stock_qty <= 5,
+        active: m.active !== false,
+      }));
+
+  const meds = tab === 'emuso'
+    ? allMeds.filter(m => m.active !== false)
+    : tab === 'encerrados'
+      ? allMeds.filter(m => m.active === false)
+      : allMeds;
+  const streak = 0;
 
   return (
     <Screen>

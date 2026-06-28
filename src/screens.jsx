@@ -1,5 +1,8 @@
 // Cuida — Main screens
 import React, { useState as useStateScreens } from 'react';
+import { usePatient } from './lib/PatientContext.jsx';
+import { useFamily } from './lib/hooks/useFamily.js';
+import { useMedications } from './lib/hooks/useMedications.js';
 import { CUIDA_DATA as D } from './data.jsx';
 import {
   Avatar, Button, IconButton, Card, SoftCard, Pill, Bar, Dot, Screen, ScreenHeader, ViewToggle,
@@ -363,9 +366,30 @@ function MedRow({ med, taken, onToggle }) {
 // 3. ESTOQUE
 // ════════════════════════════════════════════════════════════
 function StockScreen({ go }) {
+  const { currentPatientId } = usePatient();
+  const { medications: rawMeds, loading: medsLoading } = useMedications(currentPatientId);
   const [filter, setFilter] = useStateScreens('all');
-  const items = filter === 'critical' ? D.STOCK_ALL.filter(s => s.critical) : D.STOCK_ALL;
-  const critical = D.STOCK_ALL.filter(s => s.critical);
+
+  // Map DB medications to stock format; fall back to mock if no real data
+  const usingMock = rawMeds.length === 0 && !currentPatientId;
+  const stockItems = usingMock
+    ? D.STOCK_ALL
+    : rawMeds.filter(m => m.active).map((m, i) => {
+        const days = m.stock_qty > 0 ? m.stock_qty : 0;
+        const critical = days <= 5;
+        return {
+          id: m.id,
+          name: m.name,
+          owner: m.dose ? `${m.dose}${m.unit ?? ''}` : '—',
+          stock: m.stock_qty ?? 0,
+          max: m.stock_max ?? 30,
+          days,
+          critical,
+        };
+      });
+
+  const items = filter === 'critical' ? stockItems.filter(s => s.critical) : stockItems;
+  const critical = stockItems.filter(s => s.critical);
   return (
     <Screen>
       <ScreenHeader title="Estoque"/>
@@ -649,6 +673,24 @@ function FakeQR({ size = 80, bg = '#fff', fg = '#000', radius = 10 }) {
 // 5. FAMILIA
 // ════════════════════════════════════════════════════════════
 function FamilyScreen({ go }) {
+  const { patients: rawPatients, currentPatientId, setCurrentPatientId } = usePatient();
+  const { members, loading: membersLoading } = useFamily(currentPatientId);
+
+  const usingMock = rawPatients.length === 0;
+  const profiles = usingMock
+    ? D.PROFILES
+    : rawPatients.map(p => ({ id: p.id, name: p.name, color: p.avatar_color ?? 'rgb(212,232,230)', fg: p.avatar_fg ?? 'rgb(1,55,61)', relation: 'Familiar', medsToday: 0, medsAlert: 0 }));
+  const family = usingMock
+    ? D.FAMILY
+    : members.map(m => ({
+        id: m.id,
+        name: m.profiles?.full_name ?? m.invite_email ?? '—',
+        color: 'rgb(218,235,222)',
+        role: m.role ?? 'Familiar',
+        perms: m.permissions?.admin ? 'Admin' : m.permissions?.edit ? 'Pode editar' : 'Visualizar',
+        status: m.invite_status,
+      }));
+
   return (
     <Screen>
       <ScreenHeader title="Família" action={
@@ -668,15 +710,21 @@ function FamilyScreen({ go }) {
       <div style={{ padding: '0 20px 6px' }}>
         <div className="cu-eyebrow" style={{ padding: '8px 4px' }}>Pessoas que você cuida</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {D.PROFILES.map(p => (
+          {profiles.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 16px', color: 'var(--c-text-muted)', fontSize: 14 }}>
+              Nenhum paciente ainda. Adicione o primeiro!
+            </div>
+          ) : profiles.map(p => (
             <Card key={p.id} padding={16} radius={18} shadow={false}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+              onClick={() => setCurrentPatientId(p.id)}>
               <Avatar name={p.name} color={p.color} fg={p.fg} size={48}/>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 16, fontWeight: 600 }}>{p.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--c-text-soft)' }}>{p.relation} · {p.medsToday} remédios/dia</div>
+                <div style={{ fontSize: 12, color: 'var(--c-text-soft)' }}>{p.relation}{p.medsToday > 0 ? ` · ${p.medsToday} remédios/dia` : ''}</div>
               </div>
               {p.medsAlert > 0 && <Dot color="var(--c-alert)" size={10}/>}
+              {currentPatientId === p.id && <Dot color="var(--c-success)" size={10}/>}
               <IconChevR size={18} style={{ color: 'var(--c-text-muted)' }}/>
             </Card>
           ))}
@@ -686,15 +734,20 @@ function FamilyScreen({ go }) {
       <div style={{ padding: '18px 20px 0' }}>
         <div className="cu-eyebrow" style={{ padding: '8px 4px' }}>Familiares com acesso</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {D.FAMILY.map((f, i) => (
-            <div key={i} style={{
+          {family.length === 0 && !membersLoading ? (
+            <div style={{ textAlign: 'center', padding: '16px', color: 'var(--c-text-muted)', fontSize: 13 }}>Nenhum familiar adicionado.</div>
+          ) : family.map((f, i) => (
+            <div key={f.id ?? i} style={{
               display: 'flex', alignItems: 'center', gap: 14, padding: 14,
               borderRadius: 18, background: 'var(--c-card)', border: '1px solid var(--c-line)',
             }}>
               <Avatar name={f.name} color={f.color} size={42}/>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 600 }}>{f.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--c-text-soft)' }}>{f.role} · {f.perms}</div>
+                <div style={{ fontSize: 12, color: 'var(--c-text-soft)' }}>
+                  {f.role} · {f.perms}
+                  {f.status === 'pending' && <span style={{ color: 'var(--c-warn)', marginLeft: 6 }}>· Convite pendente</span>}
+                </div>
               </div>
               <IconMoreV size={18} style={{ color: 'var(--c-text-muted)' }}/>
             </div>

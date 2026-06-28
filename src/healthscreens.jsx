@@ -2,7 +2,11 @@
 // MedDetailScreen, ConsultaDetailScreen, ResumoSaudeScreen,
 // HistoricoMedicoScreen, ExamesFullScreen, HomeV3Screen
 
-import React, { useState as useSH } from 'react';
+import React, { useState as useSH, useEffect as useEH } from 'react';
+import { useAuth } from './lib/AuthContext.jsx';
+import { usePatient } from './lib/PatientContext.jsx';
+import { useTodayDoses } from './lib/hooks/useMedications.js';
+import { useAppointments } from './lib/hooks/useAppointments.js';
 import { CUIDA_DATA } from './data.jsx';
 import { CONSULTAS } from './newscreens.jsx';
 import { AnimatedMedRow, AllDoneCelebration } from './micro.jsx';
@@ -793,27 +797,85 @@ function ExamesFullScreen({ go }) {
 // ────────────────────────────────────────────────────────────
 // 6. HOME V3 — Dashboard de saúde completo
 // ────────────────────────────────────────────────────────────
+// Color palette for medication cards (deterministic by index)
+const MED_PALETTE = [
+  { bg: 'rgb(254,220,195)', fg: 'rgb(122,60,38)' },
+  { bg: 'rgb(212,232,230)', fg: 'rgb(1,55,61)' },
+  { bg: 'rgb(218,235,222)', fg: 'rgb(27,77,44)' },
+  { bg: 'rgb(232,220,240)', fg: 'rgb(82,36,88)' },
+  { bg: 'rgb(207,222,240)', fg: 'rgb(28,51,92)' },
+];
+
+function mapDoseToMed(dose, idx) {
+  const c = MED_PALETTE[idx % MED_PALETTE.length];
+  const dt = new Date(dose.scheduled_at);
+  const h = dt.getHours();
+  const period = h < 12 ? 'Manhã' : h < 18 ? 'Tarde' : 'Noite';
+  const timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return {
+    id: dose.id,
+    name: dose.medications?.name ?? '—',
+    dose: `${dose.medications?.dose ?? ''}${dose.medications?.unit ?? ''}`,
+    time: `${period} · ${timeStr}`,
+    taken: dose.status === 'taken',
+    color: c.bg,
+    icon: '💊',
+  };
+}
+
 function HomeV3Screen({ go }) {
-  const [activeId, setActiveId] = useSH('maria');
+  const { user } = useAuth();
+  const { patients: rawPatients, currentPatientId, setCurrentPatientId } = usePatient();
+  const { doses: rawDoses, confirm: confirmDoseHook, loading: dosesLoading } = useTodayDoses(currentPatientId);
+  const { upcoming } = useAppointments(currentPatientId);
+
   const [view, setView] = useSH('timeline');
   const [allDoneShown, setAllDoneShown] = useSH(false);
-  const profile = CUIDA_DATA.PROFILES.find(p => p.id === activeId);
-  const meds = activeId === 'joao' ? CUIDA_DATA.MEDS_JOAO : CUIDA_DATA.MEDS_MARIA;
-  const [taken, setTaken] = useSH({});
-  const isTaken = (m) => (taken[m.id] !== undefined ? taken[m.id] : m.taken);
-  const toggle = (m) => {
+  const [localTaken, setLocalTaken] = useSH({});
+
+  // If no real patients yet, fall back to mock for design-canvas artboards
+  const usingMock = rawPatients.length === 0;
+  const profiles = usingMock
+    ? CUIDA_DATA.PROFILES
+    : rawPatients.map(p => ({ id: p.id, name: p.name, color: p.avatar_color ?? 'rgb(212,232,230)', fg: p.avatar_fg ?? 'rgb(1,55,61)' }));
+
+  const activeId = currentPatientId ?? profiles[0]?.id;
+  const setActiveId = (id) => setCurrentPatientId(id);
+
+  const meds = usingMock
+    ? (activeId === 'joao' ? CUIDA_DATA.MEDS_JOAO : CUIDA_DATA.MEDS_MARIA)
+    : rawDoses.map(mapDoseToMed);
+
+  const isTaken = (m) => localTaken[m.id] !== undefined ? localTaken[m.id] : m.taken;
+
+  const toggle = async (m) => {
     const next = !isTaken(m);
-    setTaken(prev => ({ ...prev, [m.id]: next }));
+    setLocalTaken(prev => ({ ...prev, [m.id]: next }));
+    if (!usingMock) {
+      if (next) await confirmDoseHook(m.id);
+    }
     if (next) {
       const allDone = meds.every(x => x.id === m.id ? true : isTaken(x));
       if (allDone && !allDoneShown) { setAllDoneShown(true); setTimeout(() => setAllDoneShown(false), 3000); }
     }
   };
+
   const totalTaken = meds.filter(isTaken).length;
   const nextMed = meds.find(m => !isTaken(m));
   const morning = meds.filter(m => m.time.startsWith('Manhã'));
   const afternoon = meds.filter(m => m.time.startsWith('Tarde'));
   const night = meds.filter(m => m.time.startsWith('Noite'));
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'você';
+  const todayStr = new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'long' });
+
+  // Next appointment
+  const nextAppt = upcoming?.[0];
+  const apptDate = nextAppt ? new Date(nextAppt.scheduled_at) : null;
+  const apptDaysAway = apptDate ? Math.ceil((apptDate - new Date()) / 86400000) : null;
 
   const QuickBtn = ({ icon, label, screen, alert }) => (
     <button onClick={() => go && go(screen)} style={{
@@ -833,13 +895,13 @@ function HomeV3Screen({ go }) {
   return (
     <Screen>
       {/* All-done celebration */}
-      <AllDoneCelebration show={allDoneShown} name={profile.name}/>
+      <AllDoneCelebration show={allDoneShown} name={profiles.find(p => p.id === activeId)?.name ?? ''}/>
 
       {/* Greeting */}
       <div style={{ padding: '4px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div className="cu-eyebrow" style={{ marginBottom: 3 }}>Qua, 28 de mai.</div>
-          <div className="cu-h2">Bom dia, Carla.</div>
+          <div className="cu-eyebrow" style={{ marginBottom: 3 }}>{todayStr}</div>
+          <div className="cu-h2">{greeting}, {firstName}.</div>
         </div>
         <div style={{ position: 'relative' }}>
           <IconButton variant="soft" onClick={() => go && go('settings')}><IconBell size={20}/></IconButton>
@@ -848,7 +910,7 @@ function HomeV3Screen({ go }) {
       </div>
 
       {/* Profile picker */}
-      <ProfilePicker profiles={CUIDA_DATA.PROFILES} activeId={activeId} onChange={setActiveId} onAdd={() => go && go('fam')}/>
+      <ProfilePicker profiles={profiles} activeId={activeId} onChange={setActiveId} onAdd={() => go && go('fam')}/>
 
       {/* Resumo do dia — 2×2 grid */}
       <div style={{ padding: '6px 20px 0' }}>
@@ -869,32 +931,40 @@ function HomeV3Screen({ go }) {
             border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
           }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(254,243,225,.65)', marginBottom: 6 }}>Consulta</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--c-accent-fg)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Cardio</div>
-            <div style={{ fontSize: 11, color: 'rgba(254,243,225,.75)', marginTop: 3 }}>Sex 24 Mai · 10:30</div>
+            {nextAppt ? (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--c-accent-fg)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{nextAppt.specialty}</div>
+                <div style={{ fontSize: 11, color: 'rgba(254,243,225,.75)', marginTop: 3 }}>
+                  {apptDate?.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })} · {apptDate?.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  {apptDaysAway !== null && apptDaysAway <= 7 && <span> · em {apptDaysAway}d</span>}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--c-accent-fg)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>Nenhuma</div>
+                <div style={{ fontSize: 11, color: 'rgba(254,243,225,.75)', marginTop: 3 }}>Agendar →</div>
+              </>
+            )}
           </button>
 
           {/* Exames */}
           <button onClick={() => go && go('exames-full')} style={{
-            padding: 16, borderRadius: 18,
-            background: EXAMES_FULL.some(e => e.status === 'atrasado') ? 'var(--c-alert-soft)' : 'var(--c-warn-soft)',
+            padding: 16, borderRadius: 18, background: 'var(--c-warn-soft)',
             border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
           }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--c-warn)', marginBottom: 6 }}>Exames</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: EXAMES_FULL.some(e => e.status === 'atrasado') ? 'var(--c-alert)' : 'var(--c-warn)', letterSpacing: '-0.01em' }}>
-              {EXAMES_FULL.filter(e => e.status === 'atrasado').length > 0 ? '1 atrasado' : `${EXAMES_FULL.filter(e => e.status === 'pendente').length} pend.`}
-            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--c-warn)', letterSpacing: '-0.01em' }}>Ver</div>
             <div style={{ fontSize: 11, color: 'var(--c-text-soft)', marginTop: 2 }}>Ver detalhes →</div>
           </button>
 
           {/* Estoque */}
           <button onClick={() => go && go('stock')} style={{
-            padding: 16, borderRadius: 18,
-            background: profile.medsAlert > 0 ? 'var(--c-alert-soft)' : 'var(--c-surface)',
+            padding: 16, borderRadius: 18, background: 'var(--c-surface)',
             border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
           }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: profile.medsAlert > 0 ? 'var(--c-alert)' : 'var(--c-text-soft)', marginBottom: 6 }}>Estoque</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: profile.medsAlert > 0 ? 'var(--c-alert)' : 'var(--c-text)', letterSpacing: '-0.01em' }}>{profile.medsAlert > 0 ? `${profile.medsAlert} alerta` : 'Em dia'}</div>
-            <div style={{ fontSize: 11, color: 'var(--c-text-soft)', marginTop: 2 }}>{profile.medsAlert > 0 ? 'AAS · 4 dias' : 'Todos ok'}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--c-text-soft)', marginBottom: 6 }}>Estoque</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--c-text)', letterSpacing: '-0.01em' }}>{meds.length > 0 ? `${meds.length} med.` : 'Em dia'}</div>
+            <div style={{ fontSize: 11, color: 'var(--c-text-soft)', marginTop: 2 }}>Ver estoque →</div>
           </button>
         </div>
       </div>
