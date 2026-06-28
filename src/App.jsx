@@ -823,9 +823,19 @@ function AppShell() {
 
   return (
     <React.Fragment>
-      {/* App em tela cheia — sem moldura de iPhone */}
-      <div style={{ height: '100dvh', position: 'relative' }}>
-        <CuidaAppContent/>
+      {/* Centra o app em largura mobile; fundo escuro nas laterais em desktop */}
+      <div style={{
+        height: '100dvh', background: '#111',
+        display: 'flex', justifyContent: 'center',
+      }}>
+        <div style={{
+          position: 'relative', width: '100%', maxWidth: 430,
+          height: '100%', overflow: 'hidden',
+          background: 'var(--c-bg)',
+          boxShadow: '0 0 60px rgba(0,0,0,.4)',
+        }}>
+          <CuidaAppContent/>
+        </div>
       </div>
       <TweaksPanel title="Tweaks">
         <TweakSection label="Paleta global">
